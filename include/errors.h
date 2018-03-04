@@ -31,4 +31,16 @@ public:
    explicit NoSuchNode(const std::string& error);
 };
 
+class IOError : public Exception
+{
+public:
+   explicit IOError(const std::string& error);
+};
+
+class TooLargeNode : public Exception
+{
+public:
+   explicit TooLargeNode(const std::string& error);
+};
+
 #endif

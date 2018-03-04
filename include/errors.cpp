@@ -24,3 +24,13 @@ NoSuchNode::NoSuchNode(const std::string& error)
    : Exception(error)
 {
 }
+
+IOError::IOError(const std::string& error)
+   : Exception(error)
+{
+}
+
+TooLargeNode::TooLargeNode(const std::string& error)
+   : Exception(error)
+{
+}

@@ -4,7 +4,7 @@
 class Volume
 {
 protected:
-   Volume();
+   Volume() = default;
    Volume(const Volume&) = delete;
    void operator=(const Volume&) = delete;
 

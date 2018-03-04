@@ -70,7 +70,7 @@ bool Storage::set_property(const std::string& path, const T& value)
    std::string node_path;
    std::string property_name;
    if (!split_property_path(path, node_path, property_name)) {
-      throw new LogicError(path + " is not a valid property path");
+      throw LogicError(path + " is not a valid property path");
    }
 
    std::shared_ptr<Node> node = get_node(node_path);
@@ -88,7 +88,7 @@ bool Storage::get_property(const std::string& path, T& value)
    std::string node_path;
    std::string property_name;
    if (!split_property_path(path, node_path, property_name)) {
-      throw new LogicError(path + " is not a valid property path");
+      throw LogicError(path + " is not a valid property path");
    }
 
    std::shared_ptr<Node> node = get_node(node_path);
