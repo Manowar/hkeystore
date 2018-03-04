@@ -4,9 +4,9 @@
 #include "utility.h"
 
 
-std::shared_ptr<Volume> Storage::open_volume(const std::string& path)
+std::shared_ptr<Volume> Storage::open_volume(const std::string& path, bool create_if_not_exist)
 {
-   return std::make_shared<VolumeImpl>();
+   return std::make_shared<VolumeImpl>(path, create_if_not_exist);
 }
 
 void Storage::mount(std::shared_ptr<Volume> volume, const std::string& path)
@@ -45,7 +45,7 @@ std::shared_ptr<Node> Storage::get_node(const std::string& path)
    size_t i_path = 0;
    while (true) {
       for (auto& volume_node : node->volumes) {
-         std::shared_ptr<Node> node = NodeImpl::get_node_impl(volume_node, get_path_tail(path, i_path));
+         std::shared_ptr<Node> node = volume_node->get_node_impl(get_path_tail(path, i_path));
          if (node) {
             return node;
          }

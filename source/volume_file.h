@@ -3,9 +3,10 @@
 
 #include <memory>
 #include <array>
+#include <istream>
 #include <fstream>
 #include <mutex>
-
+#include <functional>
 
 class VolumeFile
 {
@@ -14,12 +15,19 @@ public:
    VolumeFile(const VolumeFile&) = delete;
    void operator= (const VolumeFile&) = delete;
 
+   static bool volume_file_exists(const std::string& path);
    static void create_new_volume_file(const std::string& path);
    static std::unique_ptr<VolumeFile> open_volume_file(const std::string& path);
 
-   uint64_t allocate_node(void* data, size_t size);
+   void read_node(uint64_t node_id, std::function<void(std::istream&)> read);
+   void write_node(uint64_t node_id, const void* data, size_t size);
+
+   uint64_t get_root_node_id();
+   void set_root_node_id(uint64_t root_node_id);
+
+   uint64_t allocate_node(const void* data, size_t size);
    void remove_node(uint64_t node_id);
-   uint64_t resize_node(uint64_t node_id, void* data, size_t size);
+   uint64_t resize_node(uint64_t node_id, const void* data, size_t size);
 
 private:
    static const int SIZES_COUNT = 8;
@@ -33,7 +41,8 @@ private:
       int32_t version;
       size_t free_nodes_block_offsets[SIZES_COUNT];
       size_t available_free_nodes_block_offset;
-      char padding[CONTROL_BLOCK_SIZE - 4 - sizeof(int32_t) - SIZES_COUNT * sizeof(size_t) - sizeof(size_t)];
+      uint64_t root_node_id;
+      char padding[CONTROL_BLOCK_SIZE - 4 - sizeof(int32_t) - SIZES_COUNT * sizeof(size_t) - sizeof(size_t) - sizeof(uint64_t)];
    };
 
    static_assert(sizeof(HeaderBlock) == CONTROL_BLOCK_SIZE);

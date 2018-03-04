@@ -17,6 +17,11 @@ static const char SIGNATURE[4] = { 'H', 'K', 'E', 'Y' };
 static const size_t EMPTY_OFFSET = size_t(-1);
 
 
+bool VolumeFile::volume_file_exists(const std::string& path)
+{
+   std::ofstream file(path.c_str(), std::ios_base::in | std::ios_base::out | std::ios_base::binary);
+   return file.is_open();
+}
 
 void VolumeFile::create_new_volume_file(const std::string& path)
 {
@@ -32,6 +37,7 @@ void VolumeFile::create_new_volume_file(const std::string& path)
       header_block.free_nodes_block_offsets[i] = EMPTY_OFFSET;
    }
    header_block.available_free_nodes_block_offset = EMPTY_OFFSET;
+   header_block.root_node_id = uint64_t(-1);
    memset(header_block.padding, 0, sizeof(header_block.padding));
    file.write(reinterpret_cast<char*>(&header_block), sizeof(HeaderBlock));
 
@@ -72,7 +78,44 @@ std::unique_ptr<VolumeFile> VolumeFile::open_volume_file(const std::string& path
    return volume_file;
 }
 
-uint64_t VolumeFile::allocate_node(void* data, size_t size)
+void VolumeFile::read_node(uint64_t node_id, std::function<void(std::istream&)> read)
+{
+   lock_guard locker(lock);
+
+   int i_size;
+   size_t offset;
+   from_node_id(node_id, i_size, offset);
+
+   file.seekg(offset);
+   read(file);
+}
+
+void VolumeFile::write_node(uint64_t node_id, const void* data, size_t size)
+{
+   lock_guard locker(lock);
+
+   int i_size;
+   size_t offset;
+   from_node_id(node_id, i_size, offset);
+
+   file.seekp(offset);
+   file.write(reinterpret_cast<const char*>(data), size);
+}
+
+uint64_t VolumeFile::get_root_node_id()
+{
+   lock_guard locker(lock);
+   return header_block.root_node_id;
+}
+
+void VolumeFile::set_root_node_id(uint64_t root_node_id)
+{
+   lock_guard locker(lock);
+   header_block.root_node_id = root_node_id;
+   save_header_block();
+}
+
+uint64_t VolumeFile::allocate_node(const void* data, size_t size)
 {
    lock_guard locker(lock);
 
@@ -100,14 +143,14 @@ uint64_t VolumeFile::allocate_node(void* data, size_t size)
       }
 
       file.seekp(offset);
-      file.write(reinterpret_cast<char*>(data), size);
+      file.write(reinterpret_cast<const char*>(data), size);
    } else {
       // There is no free block, need to allocate a new one
       offset = file_size;
       file_size += NODE_SIZES[i_size];
 
       file.seekp(offset);
-      file.write(reinterpret_cast<char*>(data), size);
+      file.write(reinterpret_cast<const char*>(data), size);
       write_padding(NODE_SIZES[i_size] - size);
    }
 
@@ -140,7 +183,7 @@ void VolumeFile::remove_node(uint64_t node_id)
    save_free_nodes_block(i_size);
 }
 
-uint64_t VolumeFile::resize_node(uint64_t node_id, void* data, size_t size)
+uint64_t VolumeFile::resize_node(uint64_t node_id, const void* data, size_t size)
 {
    lock_guard locker(lock);
 
@@ -153,7 +196,7 @@ uint64_t VolumeFile::resize_node(uint64_t node_id, void* data, size_t size)
    if (i_new_size == i_current_size) {
       // leave node at the same place
       file.seekp(offset);
-      file.write(reinterpret_cast<char*>(data), size);
+      file.write(reinterpret_cast<const char*>(data), size);
       return node_id;
    } 
 

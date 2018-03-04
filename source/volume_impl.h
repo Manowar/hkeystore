@@ -10,7 +10,7 @@
 class VolumeImpl : public Volume
 {
 public:
-   VolumeImpl();
+   VolumeImpl(const std::string& volume_file_path, bool create_if_not_exist);
 
    void set_storage(Storage* storage);
    Storage* get_storage();

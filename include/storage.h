@@ -21,7 +21,7 @@ public:
    Storage(const Storage&) = delete;
    void operator=(const Storage&) = delete;
 
-   std::shared_ptr<Volume> open_volume(const std::string& path);
+   std::shared_ptr<Volume> open_volume(const std::string& path, bool create_if_not_exist);
    void mount(std::shared_ptr<Volume> volume, const std::string& path);
    void mount(std::shared_ptr<Volume> volume, const std::string& path, const std::string& node_path);
 

@@ -7,9 +7,12 @@
 
 int main()
 {
+   remove("volume1");
+   remove("volume2");
+
    auto storage = std::make_unique<Storage>();
-   auto volume1 = storage->open_volume("volume1");
-   auto volume2 = storage->open_volume("volume2");
+   auto volume1 = storage->open_volume("volume1", true);
+   auto volume2 = storage->open_volume("volume2", true);
    storage->mount(volume1, "volume1");
    storage->mount(volume2, "volume2.volume2");
 
