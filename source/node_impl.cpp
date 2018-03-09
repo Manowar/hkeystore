@@ -18,11 +18,11 @@ NodeImpl::NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::s
    lock_guard locker(lock);
 }
 
-NodeImpl::NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, uint64_t node_id)
+NodeImpl::NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, record_id_t record_id)
    : child_id(child_id)
    , parent(parent)
    , volume_file(volume_file)
-   , node_id(node_id)
+   , record_id(record_id)
 {
    load();
 
@@ -41,7 +41,7 @@ std::shared_ptr<NodeImpl> NodeImpl::get_child(const std::string& name)
    std::shared_ptr<NodeImpl> child = it->second.node.lock();
    if (!child) {
       // Node was not loaded. Load it.
-      child = std::make_shared<NodeImpl>(it->second.child_id, shared_from_this(), volume_file, it->second.node_id);
+      child = std::make_shared<NodeImpl>(it->second.child_id, shared_from_this(), volume_file, it->second.record_id);
       it->second.node = child;
    }
 
@@ -92,7 +92,7 @@ std::shared_ptr<NodeImpl> NodeImpl::add_node_impl(const std::string& name)
    auto new_node = std::make_shared<NodeImpl>(child_id, shared_from_this(), volume_file);
 
    ChildNode child_node;
-   child_node.node_id = new_node->node_id;
+   child_node.record_id = new_node->record_id;
    child_node.node = new_node;
    child_node.child_id = child_id;
 
@@ -152,7 +152,7 @@ void NodeImpl::remove_child_impl(const std::string & name)
 
    std::shared_ptr<NodeImpl> removing_node = it->second.node.lock();
    if (removing_node == nullptr) {
-      removing_node = std::make_shared<NodeImpl>(it->second.child_id, shared_from_this(), volume_file, it->second.node_id);
+      removing_node = std::make_shared<NodeImpl>(it->second.child_id, shared_from_this(), volume_file, it->second.record_id);
    }
    removing_node->delete_from_volume();
 
@@ -163,7 +163,7 @@ void NodeImpl::remove_child_impl(const std::string & name)
    update();
 }
 
-void NodeImpl::child_node_id_updated(child_id_t child_id, uint64_t new_node_id)
+void NodeImpl::child_node_record_id_updated(child_id_t child_id, record_id_t new_record_id)
 {
    lock_guard locker(lock);
 
@@ -173,14 +173,14 @@ void NodeImpl::child_node_id_updated(child_id_t child_id, uint64_t new_node_id)
    }
 
    const std::string& child_name = it->second;
-   nodes[child_name].node_id = new_node_id;
+   nodes[child_name].record_id = new_record_id;
 
    save_nodes();
 }
 
 void NodeImpl::save()
 {
-   if (node_id == DELETED_NODE_ID) {
+   if (record_id == DELETED_NODE_RECORD_ID) {
       return;
    }
 
@@ -189,16 +189,16 @@ void NodeImpl::save()
    oa & nodes;
    oa & properties;
    std::string data = os.str();
-   node_id = volume_file->allocate_node(data.c_str(), data.length());
+   record_id = volume_file->allocate_record(data.c_str(), data.length());
 
    if (!parent) {
-      volume_file->set_root_node_id(node_id);
+      volume_file->set_root_node_record_id(record_id);
    }
 }
 
 void NodeImpl::save_nodes()
 {
-   if (node_id == DELETED_NODE_ID) {
+   if (record_id == DELETED_NODE_RECORD_ID) {
       return;
    }
 
@@ -206,12 +206,12 @@ void NodeImpl::save_nodes()
    boost::archive::binary_oarchive oa(os);
    oa & nodes;
    std::string data = os.str();
-   volume_file->write_node(node_id, data.c_str(), data.length());
+   volume_file->write_record(record_id, data.c_str(), data.length());
 }
 
 void NodeImpl::load()
 {
-   volume_file->read_node(node_id, [&](std::istream& is) {
+   volume_file->read_record(record_id, [&](std::istream& is) {
       boost::archive::binary_iarchive ia(is);
       ia & nodes;
       ia & properties;
@@ -224,17 +224,17 @@ void NodeImpl::load()
 
 void NodeImpl::update()
 {
-   if (node_id == DELETED_NODE_ID) {
+   if (record_id == DELETED_NODE_RECORD_ID) {
       return;
    }
 
-   uint64_t old_node_id = node_id;
+   record_id_t old_record_id = record_id;
    save();
-   if (old_node_id != node_id) {
+   if (old_record_id != record_id) {
       if (parent) {
-         parent->child_node_id_updated(child_id, node_id);
+         parent->child_node_record_id_updated(child_id, record_id);
       } else {
-         volume_file->set_root_node_id(node_id);
+         volume_file->set_root_node_record_id(record_id);
       }
    }
 }
@@ -269,7 +269,7 @@ void NodeImpl::delete_from_volume()
    while (nodes_to_delete.size() > 0) {
       NodeToDelete& node_to_delete = nodes_to_delete.back();
 
-      if (node_to_delete.node->node_id == DELETED_NODE_ID) {
+      if (node_to_delete.node->record_id == DELETED_NODE_RECORD_ID) {
          nodes_to_delete.pop_back();
          continue;
       }
@@ -280,15 +280,16 @@ void NodeImpl::delete_from_volume()
          for (auto it = node->nodes.begin(); it != node->nodes.end(); ++it) {
             std::shared_ptr<NodeImpl> child = it->second.node.lock();
             if (!child) {
-               child = std::make_shared<NodeImpl>(it->second.child_id, shared_from_this(), volume_file, it->second.node_id);
+               child = std::make_shared<NodeImpl>(it->second.child_id, shared_from_this(), volume_file, it->second.record_id);
             }
             nodes_to_delete.push_back(NodeToDelete(child));
          }
          continue;
       }
 
-      volume_file->remove_node(node_id);
-      node_id = DELETED_NODE_ID;
+      volume_file->delete_record(node_to_delete.node->record_id);
+      node_to_delete.node->record_id = DELETED_NODE_RECORD_ID;
+
       nodes_to_delete.pop_back();
    }
 }

@@ -21,7 +21,7 @@ public:
    NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file);
 
    // Existing node
-   NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, uint64_t node_id);
+   NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, record_id_t record_id);
 
    std::shared_ptr<NodeImpl> get_child(const std::string& name);
    std::shared_ptr<NodeImpl> add_node_impl(const std::string& name);
@@ -32,8 +32,6 @@ public:
    template<typename T> void set_property_impl(const std::string& name, const T& value);
    template<typename T> bool get_property_impl(const std::string& name, T& value);
 
-   void child_node_id_updated(child_id_t child_id, uint64_t new_node_id);
-
 private:
    using mutex = std::mutex;
    using lock_guard = std::lock_guard<mutex>;
@@ -41,7 +39,7 @@ private:
 
    struct ChildNode
    {
-      uint64_t node_id;
+      record_id_t record_id;
       child_id_t child_id;
       std::weak_ptr<NodeImpl> node;
 
@@ -51,7 +49,7 @@ private:
 
    friend struct NodeToDelete;
 
-   static const uint64_t DELETED_NODE_ID = uint64_t(-1);
+   static const uint64_t DELETED_NODE_RECORD_ID = record_id_t(-1);
 
    void save();
    void save_nodes();
@@ -59,10 +57,11 @@ private:
    void update();
 
    void delete_from_volume();
+   void child_node_record_id_updated(child_id_t child_id, record_id_t new_record_id);
 
    mutex lock;
 
-   uint64_t node_id;
+   record_id_t record_id;
    child_id_t child_id;
 
    child_id_t next_child_id = 0;
@@ -78,7 +77,7 @@ private:
 template<typename Archive>
 inline void NodeImpl::ChildNode::serialize(Archive& archive, unsigned file_version)
 {
-   archive & node_id;
+   archive & record_id;
 }
 
 #endif
