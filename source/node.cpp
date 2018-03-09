@@ -41,6 +41,16 @@ void Node::set_property(const std::string& name, const std::string& value)
    static_cast<NodeImpl*>(this)->set_property_impl(name, value);
 }
 
+void Node::set_property(const std::string& name, const std::vector<char>& value)
+{
+   static_cast<NodeImpl*>(this)->set_blob_property_impl(name, &value[0], value.size());
+}
+
+void Node::set_property(const std::string& name, void* data, size_t size)
+{
+   static_cast<NodeImpl*>(this)->set_blob_property_impl(name, data, size);
+}
+
 bool Node::get_property(const std::string& name, int& value)
 {
    return static_cast<NodeImpl*>(this)->get_property_impl(name, value);
@@ -91,6 +101,11 @@ bool Node::get_property(const std::string& name, long double& value)
 bool Node::get_property(const std::string& name, std::string& value)
 {
    return static_cast<NodeImpl*>(this)->get_property_impl(name, value);
+}
+
+bool Node::get_property(const std::string & name, std::vector<char>& value)
+{
+   return static_cast<NodeImpl*>(this)->get_blob_property_impl(name, value);
 }
 
 std::shared_ptr<Node> Node::add_node(const std::string& name)

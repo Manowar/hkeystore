@@ -29,8 +29,8 @@ public:
    static void create_new_volume_file(const std::string& path);
    static std::unique_ptr<VolumeFile> open_volume_file(const std::string& path);
 
-   void read_record(record_id_t node_id, std::function<void(std::istream&)> read);
-   void write_record(record_id_t node_id, const void* data, size_t size);
+   void read_record(record_id_t record_id, std::function<void(std::istream&)> read);
+   void write_record(record_id_t record_id, const void* data, size_t size);
 
    record_id_t get_root_node_record_id();
    void set_root_node_record_id(record_id_t record_id);

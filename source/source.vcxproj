@@ -131,6 +131,7 @@
     <ClInclude Include="..\include\node.h" />
     <ClInclude Include="..\include\storage.h" />
     <ClInclude Include="..\include\volume.h" />
+    <ClInclude Include="blob_property.h" />
     <ClInclude Include="node_impl.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="volume_file.h" />
@@ -138,6 +139,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\include\errors.cpp" />
+    <ClCompile Include="blob_property.cpp" />
     <ClCompile Include="node.cpp" />
     <ClCompile Include="node_impl.cpp" />
     <ClCompile Include="storage.cpp" />

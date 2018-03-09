@@ -1,6 +1,7 @@
 #ifndef HKEYSTORE_NODE_IMPL_H
 #define HKEYSTORE_NODE_IMPL_H
 
+#include <vector>
 #include <unordered_map>
 #include <string>
 #include <variant>
@@ -11,6 +12,7 @@
 #include <node.h>
 
 #include "volume_file.h"
+#include "blob_property.h"
 
 class NodeImpl : public Node, public std::enable_shared_from_this<NodeImpl>
 {
@@ -31,11 +33,13 @@ public:
 
    template<typename T> void set_property_impl(const std::string& name, const T& value);
    template<typename T> bool get_property_impl(const std::string& name, T& value);
+   void set_blob_property_impl(const std::string& name, const void* data, size_t size);
+   bool get_blob_property_impl(const std::string& name, std::vector<char>& value);
 
 private:
    using mutex = std::mutex;
    using lock_guard = std::lock_guard<mutex>;
-   using PropertyValue = boost::variant<int, int64_t, float, double, long double, std::string>;
+   using PropertyValue = boost::variant<int, int64_t, float, double, long double, std::string, BlobPropery>;
 
    struct ChildNode
    {

@@ -48,6 +48,21 @@ std::shared_ptr<NodeImpl> NodeImpl::get_child(const std::string& name)
    return child;
 }
 
+struct RemoveBlobPropertyVisitor : public boost::static_visitor<void>
+{
+   RemoveBlobPropertyVisitor(std::shared_ptr<VolumeFile>& volume_file);
+
+   template<typename T>
+   void operator()(const T&) const {}
+   void operator()(BlobPropery& blobProperty) const { blobProperty.remove(volume_file); }
+private:
+   std::shared_ptr<VolumeFile>& volume_file;
+};
+
+RemoveBlobPropertyVisitor::RemoveBlobPropertyVisitor(std::shared_ptr<VolumeFile>& volume_file)
+   : volume_file(volume_file)
+{
+}
 
 template<typename T>
 void NodeImpl::set_property_impl(const std::string& name, const T& value)
@@ -57,8 +72,13 @@ void NodeImpl::set_property_impl(const std::string& name, const T& value)
    }
 
    lock_guard locker(lock);
-
-   properties[name] = value;
+   auto it = properties.find(name);
+   if (it == properties.end()) {
+      properties.insert({ name, value });
+   } else {
+      boost::apply_visitor(RemoveBlobPropertyVisitor(volume_file), it->second);
+      it->second = value;
+   }
    update();
 }
 
@@ -161,6 +181,46 @@ void NodeImpl::remove_child_impl(const std::string & name)
    child_names_by_child_ids.erase(child_id);
 
    update();
+}
+
+void NodeImpl::set_blob_property_impl(const std::string & name, const void* data, size_t size)
+{
+   if (name.find('.') != std::string::npos) {
+      throw LogicError("Can't add property with name '" + name + "'. Property names can't contain dots");
+   }
+
+   lock_guard locker(lock);
+
+   BlobPropery blob_property;
+   blob_property.store(volume_file, data, size);
+
+   auto it = properties.find(name);
+   if (it == properties.end()) {
+      properties.insert({ name, blob_property });
+   } else {
+      boost::apply_visitor(RemoveBlobPropertyVisitor(volume_file), it->second);
+      it->second = blob_property;
+   }
+   update();
+}
+
+bool NodeImpl::get_blob_property_impl(const std::string & name, std::vector<char>& value)
+{
+   lock_guard locker(lock);
+   auto it = properties.find(name);
+   if (it == properties.end()) {
+      return false;
+   }
+
+   BlobPropery blob_property;
+   bool res = boost::apply_visitor([&](auto&& property_value) {
+      return TypeConverter::convert<std::decay_t<decltype(property_value)>, BlobPropery>(property_value, blob_property);
+   }, it->second);
+
+   if (res) {
+      value = blob_property.load(volume_file);
+   }
+   return res;
 }
 
 void NodeImpl::child_node_record_id_updated(child_id_t child_id, record_id_t new_record_id)
@@ -287,8 +347,12 @@ void NodeImpl::delete_from_volume()
          continue;
       }
 
-      volume_file->delete_record(node_to_delete.node->record_id);
+      node_to_delete.node->volume_file->delete_record(node_to_delete.node->record_id);
+      for (auto key_property : node_to_delete.node->properties) {
+         boost::apply_visitor(RemoveBlobPropertyVisitor(node_to_delete.node->volume_file), key_property.second);
+      }
       node_to_delete.node->record_id = DELETED_NODE_RECORD_ID;
+      node_to_delete.node->volume_file = nullptr;
 
       nodes_to_delete.pop_back();
    }
@@ -307,5 +371,3 @@ template void NodeImpl::set_property_impl<float>(const std::string& name, const 
 template void NodeImpl::set_property_impl<double>(const std::string& name, const double& value);
 template void NodeImpl::set_property_impl<long double>(const std::string& name, const long double& value);
 template void NodeImpl::set_property_impl<std::string>(const std::string& name, const std::string& value);
-
-

@@ -39,6 +39,9 @@
     <ClInclude Include="volume_file.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="blob_property.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="node.cpp">
@@ -63,6 +66,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="volume_file.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="blob_property.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 class Node
 {
@@ -21,6 +22,7 @@ public:
    bool get_property(const std::string& name, double& value);
    bool get_property(const std::string& name, long double& value);
    bool get_property(const std::string& name, std::string& value);
+   bool get_property(const std::string& name, std::vector<char>& value);
 
    void set_property(const std::string& name, int value);
    void set_property(const std::string& name, int64_t value);
@@ -30,6 +32,8 @@ public:
    void set_property(const std::string& name, double value);
    void set_property(const std::string& name, long double value);
    void set_property(const std::string& name, const std::string& value);
+   void set_property(const std::string& name, const std::vector<char>& value);
+   void set_property(const std::string& name, void* data, size_t size);
 };
 
 #endif
