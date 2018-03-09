@@ -15,20 +15,24 @@
 class NodeImpl : public Node, public std::enable_shared_from_this<NodeImpl>
 {
 public:
+   using child_id_t = uint64_t;
+
    // New node
-   NodeImpl(const std::string& name, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file);
+   NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file);
 
    // Existing node
-   NodeImpl(const std::string& name, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, uint64_t node_id);
+   NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, uint64_t node_id);
 
    std::shared_ptr<NodeImpl> get_child(const std::string& name);
    std::shared_ptr<NodeImpl> add_node_impl(const std::string& name);
    std::shared_ptr<NodeImpl> get_node_impl(const std::string& path);
+   void rename_child_impl(const std::string& name, const std::string& new_name);
+   void remove_child_impl(const std::string& name);
 
    template<typename T> void set_property_impl(const std::string& name, const T& value);
    template<typename T> bool get_property_impl(const std::string& name, T& value);
 
-   void child_node_id_updated(const std::string& name, uint64_t new_node_id);
+   void child_node_id_updated(child_id_t child_id, uint64_t new_node_id);
 
 private:
    using mutex = std::mutex;
@@ -38,24 +42,34 @@ private:
    struct ChildNode
    {
       uint64_t node_id;
+      child_id_t child_id;
       std::weak_ptr<NodeImpl> node;
 
       template<typename Archive>
       void serialize(Archive& archive, unsigned file_version);
    };
 
+   friend struct NodeToDelete;
+
+   static const uint64_t DELETED_NODE_ID = uint64_t(-1);
+
    void save();
    void save_nodes();
    void load();
    void update();
 
+   void delete_from_volume();
+
    mutex lock;
 
-   std::string name;
-
    uint64_t node_id;
+   child_id_t child_id;
+
+   child_id_t next_child_id = 0;
+
    std::unordered_map<std::string, PropertyValue> properties;
    std::unordered_map<std::string, ChildNode> nodes;
+   std::unordered_map<child_id_t, std::string> child_names_by_child_ids;
 
    std::shared_ptr<NodeImpl> parent;
    std::shared_ptr<VolumeFile> volume_file;
