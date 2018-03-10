@@ -23,10 +23,16 @@ public:
    void operator=(const Storage&) = delete;
 
    std::shared_ptr<Volume> open_volume(const std::string& path, bool create_if_not_exist);
+
    void mount(std::shared_ptr<Volume> volume, const std::string& path);
    void mount(std::shared_ptr<Volume> volume, const std::string& path, const std::string& node_path);
+   void unmount(std::shared_ptr<Volume> volume, const std::string& path);
+   void unmount(std::shared_ptr<Volume> volume, const std::string& path, const std::string& node_path);
 
    std::shared_ptr<Node> get_node(const std::string& path) const;
+   std::shared_ptr<Node> add_node(const std::string& path, const std::string& name);
+   void remove_node(const std::string& path);
+   void rename_node(const std::string& path, const std::string& new_name);
 
    bool get_property(const std::string& path, int& value) const;
    bool get_property(const std::string& path, int64_t& value) const;
@@ -50,10 +56,19 @@ public:
    bool set_property(const std::string& path, void* data, size_t size);
 
 private:
+   struct MountPoint
+   {
+      MountPoint(std::shared_ptr<VolumeImpl>& volume, const std::string& node_path, std::shared_ptr<NodeImpl>& node);
+
+      std::shared_ptr<VolumeImpl> volume;
+      std::string node_path;
+      std::shared_ptr<NodeImpl> node;
+   };
+
    struct MountNode
    {
       std::unordered_map<std::string, MountNode> nodes;
-      std::vector<std::shared_ptr<NodeImpl>> volumes;
+      std::vector<MountPoint> mount_points;
    };
 
    template<typename T>

@@ -26,7 +26,7 @@ public:
    NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, record_id_t record_id);
 
    std::shared_ptr<NodeImpl> get_child(const std::string& name);
-   std::shared_ptr<NodeImpl> add_node_impl(const std::string& name);
+   std::shared_ptr<NodeImpl> add_child_impl(const std::string& name);
    std::shared_ptr<NodeImpl> get_node_impl(const std::string& path);
    void rename_child_impl(const std::string& name, const std::string& new_name);
    void remove_child_impl(const std::string& name);

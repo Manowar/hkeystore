@@ -12,7 +12,9 @@ public:
    Node(const Node&) = delete;
    void operator=(const Node&) = delete;
 
-   std::shared_ptr<Node> add_node(const std::string& name);
+   std::shared_ptr<Node> add_child(const std::string& name);
+   void remove_child(const std::string& name);
+   void rename_child(const std::string& name, const std::string& new_name);
 
    bool get_property(const std::string& name, int& value) const;
    bool get_property(const std::string& name, int64_t& value) const;

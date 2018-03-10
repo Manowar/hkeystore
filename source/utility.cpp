@@ -38,3 +38,15 @@ bool split_property_path(const std::string& property_path, std::string& node_pat
    property_name = property_path.substr(i_dot + 1);
    return true;
 }
+
+void split_node_path(const std::string& node_path, std::string& parent_path, std::string& node_name)
+{
+   size_t i_dot = node_path.find_last_of('.');
+   if (i_dot == std::string::npos) {
+      parent_path = "";
+      node_name = node_path;
+   } else {
+      parent_path = node_path.substr(0, i_dot);
+      node_name = node_path.substr(i_dot + 1);
+   }
+}

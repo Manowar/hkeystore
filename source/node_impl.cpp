@@ -139,7 +139,7 @@ bool NodeImpl::get_property_impl<std::vector<char>>(const std::string& name, std
    return res;
 }
 
-std::shared_ptr<NodeImpl> NodeImpl::add_node_impl(const std::string& name)
+std::shared_ptr<NodeImpl> NodeImpl::add_child_impl(const std::string& name)
 {
    if (name.find('.') != std::string::npos) {
       throw LogicError("Can't add node with name '" + name + "'. Node names can't contain dots");
