@@ -14,15 +14,15 @@ public:
 
    std::shared_ptr<Node> add_node(const std::string& name);
 
-   bool get_property(const std::string& name, int& value);
-   bool get_property(const std::string& name, int64_t& value);
-   bool get_property(const std::string& name, unsigned& value);
-   bool get_property(const std::string& name, uint64_t& value);
-   bool get_property(const std::string& name, float& value);
-   bool get_property(const std::string& name, double& value);
-   bool get_property(const std::string& name, long double& value);
-   bool get_property(const std::string& name, std::string& value);
-   bool get_property(const std::string& name, std::vector<char>& value);
+   bool get_property(const std::string& name, int& value) const;
+   bool get_property(const std::string& name, int64_t& value) const;
+   bool get_property(const std::string& name, unsigned& value) const;
+   bool get_property(const std::string& name, uint64_t& value) const;
+   bool get_property(const std::string& name, float& value) const;
+   bool get_property(const std::string& name, double& value) const;
+   bool get_property(const std::string& name, long double& value) const;
+   bool get_property(const std::string& name, std::string& value) const;
+   bool get_property(const std::string& name, std::vector<char>& value) const;
 
    void set_property(const std::string& name, int value);
    void set_property(const std::string& name, int64_t value);

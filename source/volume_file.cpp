@@ -90,7 +90,7 @@ std::unique_ptr<VolumeFile> VolumeFile::open_volume_file(const std::string& path
    return volume_file;
 }
 
-void VolumeFile::read_record(record_id_t record_id, std::function<void(std::istream&)> read)
+void VolumeFile::read_record(record_id_t record_id, std::function<void(std::istream&)> read) const
 {
    lock_guard locker(lock);
 
@@ -114,7 +114,7 @@ void VolumeFile::write_record(record_id_t record_id, const void* data, size_t si
    file.write(reinterpret_cast<const char*>(data), size);
 }
 
-record_id_t VolumeFile::get_root_node_record_id()
+record_id_t VolumeFile::get_root_node_record_id() const
 {
    lock_guard locker(lock);
    return header_block.root_node_record_id;

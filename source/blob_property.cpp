@@ -1,12 +1,12 @@
 #include "blob_property.h"
 
-BlobPropery::BlobPropery()
+BlobProperty::BlobProperty()
    : size(0)
    , record_id(INVALID_RECORD_ID)
 {
 }
 
-std::vector<char> BlobPropery::load(std::shared_ptr<VolumeFile>& volume_file)
+std::vector<char> BlobProperty::load(std::shared_ptr<VolumeFile> volume_file) 
 {
    std::vector<char> res;
    res.resize(size);
@@ -18,7 +18,7 @@ std::vector<char> BlobPropery::load(std::shared_ptr<VolumeFile>& volume_file)
    return res;
 }
 
-void BlobPropery::store(std::shared_ptr<VolumeFile>& volume_file, const void* data, size_t size)
+void BlobProperty::store(std::shared_ptr<VolumeFile> volume_file, const void* data, size_t size)
 {
    this->size = size;
 
@@ -29,10 +29,22 @@ void BlobPropery::store(std::shared_ptr<VolumeFile>& volume_file, const void* da
    }
 }
 
-void BlobPropery::remove(std::shared_ptr<VolumeFile>& volume_file)
+void BlobProperty::remove(std::shared_ptr<VolumeFile> volume_file)
 {
    volume_file->delete_record(record_id);
 
    size = 0;
    record_id = INVALID_RECORD_ID;
+}
+
+BlobHolder::BlobHolder(const void* data, size_t size)
+   : data(data)
+   , size(size)
+{
+}
+
+BlobHolder::BlobHolder(const std::vector<char>& data)
+   : data(&data[0])
+   , size(data.size())
+{
 }

@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 #include <shared_mutex>
 #include <unordered_map>
 
@@ -25,10 +26,28 @@ public:
    void mount(std::shared_ptr<Volume> volume, const std::string& path);
    void mount(std::shared_ptr<Volume> volume, const std::string& path, const std::string& node_path);
 
-   std::shared_ptr<Node> get_node(const std::string& path);
+   std::shared_ptr<Node> get_node(const std::string& path) const;
 
-   template<typename T> bool get_property(const std::string& path, T& value);
-   template<typename T> bool set_property(const std::string& path, const T& value);
+   bool get_property(const std::string& path, int& value) const;
+   bool get_property(const std::string& path, int64_t& value) const;
+   bool get_property(const std::string& path, unsigned& value) const;
+   bool get_property(const std::string& path, uint64_t& value) const;
+   bool get_property(const std::string& path, float& value) const;
+   bool get_property(const std::string& path, double& value) const;
+   bool get_property(const std::string& path, long double& value) const;
+   bool get_property(const std::string& path, std::string& value) const;
+   bool get_property(const std::string& path, std::vector<char>& value) const;
+
+   bool set_property(const std::string& path, int value);
+   bool set_property(const std::string& path, int64_t value);
+   bool set_property(const std::string& path, unsigned value);
+   bool set_property(const std::string& path, uint64_t value);
+   bool set_property(const std::string& path, float value);
+   bool set_property(const std::string& path, double value);
+   bool set_property(const std::string& path, long double value);
+   bool set_property(const std::string& path, const std::string& value);
+   bool set_property(const std::string& path, const std::vector<char>& value);
+   bool set_property(const std::string& path, void* data, size_t size);
 
 private:
    struct MountNode
@@ -37,7 +56,12 @@ private:
       std::vector<std::shared_ptr<NodeImpl>> volumes;
    };
 
-   std::shared_mutex volumes_lock;
+   template<typename T>
+   bool get_property_impl(const std::string& path, T& value) const;
+   template<typename T>
+   bool set_property_impl(const std::string& path, const T& value);
+
+   mutable std::shared_mutex volumes_lock;
    MountNode volumes_root;
 };
 

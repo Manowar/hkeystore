@@ -29,10 +29,10 @@ public:
    static void create_new_volume_file(const std::string& path);
    static std::unique_ptr<VolumeFile> open_volume_file(const std::string& path);
 
-   void read_record(record_id_t record_id, std::function<void(std::istream&)> read);
+   void read_record(record_id_t record_id, std::function<void(std::istream&)> read) const;
    void write_record(record_id_t record_id, const void* data, size_t size);
 
-   record_id_t get_root_node_record_id();
+   record_id_t get_root_node_record_id() const;
    void set_root_node_record_id(record_id_t record_id);
 
    record_id_t allocate_record(const void* data, size_t size);
@@ -76,12 +76,12 @@ private:
 
    void write_padding(size_t size);
 
-   record_id_t to_record_id(int i_size, size_t offset);
-   void from_record_id(record_id_t node_id, int& i_size, size_t& offset);
+   static record_id_t to_record_id(int i_size, size_t offset);
+   static void from_record_id(record_id_t node_id, int& i_size, size_t& offset);
 
-   std::fstream file;
+   mutable std::fstream file;
    size_t file_size;
-   std::recursive_mutex lock;
+   mutable std::recursive_mutex lock;
    HeaderBlock header_block;
    std::array<FreeRecordsBlock, SIZES_COUNT> free_records_blocks;
 };

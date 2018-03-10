@@ -32,20 +32,18 @@ public:
    void remove_child_impl(const std::string& name);
 
    template<typename T> void set_property_impl(const std::string& name, const T& value);
-   template<typename T> bool get_property_impl(const std::string& name, T& value);
-   void set_blob_property_impl(const std::string& name, const void* data, size_t size);
-   bool get_blob_property_impl(const std::string& name, std::vector<char>& value);
+   template<typename T> bool get_property_impl(const std::string& name, T& value) const;
 
 private:
    using mutex = std::mutex;
    using lock_guard = std::lock_guard<mutex>;
-   using PropertyValue = boost::variant<int, int64_t, float, double, long double, std::string, BlobPropery>;
+   using PropertyValue = boost::variant<int, unsigned, int64_t, uint64_t, float, double, long double, std::string, BlobProperty>;
 
    struct ChildNode
    {
       record_id_t record_id;
       child_id_t child_id;
-      std::weak_ptr<NodeImpl> node;
+      mutable std::weak_ptr<NodeImpl> node;
 
       template<typename Archive>
       void serialize(Archive& archive, unsigned file_version);
@@ -63,7 +61,7 @@ private:
    void delete_from_volume();
    void child_node_record_id_updated(child_id_t child_id, record_id_t new_record_id);
 
-   mutex lock;
+   mutable mutex lock;
 
    record_id_t record_id;
    child_id_t child_id;

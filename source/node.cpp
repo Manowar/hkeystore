@@ -13,12 +13,12 @@ void Node::set_property(const std::string& name, int64_t value)
 
 void Node::set_property(const std::string& name, unsigned value)
 {
-   static_cast<NodeImpl*>(this)->set_property_impl(name, (int)value);
+   static_cast<NodeImpl*>(this)->set_property_impl(name, value);
 }
 
 void Node::set_property(const std::string& name, uint64_t value)
 {
-   static_cast<NodeImpl*>(this)->set_property_impl(name, (int64_t)value);
+   static_cast<NodeImpl*>(this)->set_property_impl(name, value);
 }
 
 void Node::set_property(const std::string& name, float value)
@@ -43,69 +43,57 @@ void Node::set_property(const std::string& name, const std::string& value)
 
 void Node::set_property(const std::string& name, const std::vector<char>& value)
 {
-   static_cast<NodeImpl*>(this)->set_blob_property_impl(name, &value[0], value.size());
+   static_cast<NodeImpl*>(this)->set_property_impl(name, BlobHolder(value));
 }
 
 void Node::set_property(const std::string& name, void* data, size_t size)
 {
-   static_cast<NodeImpl*>(this)->set_blob_property_impl(name, data, size);
+   static_cast<NodeImpl*>(this)->set_property_impl(name, BlobHolder(data, size));
 }
 
-bool Node::get_property(const std::string& name, int& value)
+bool Node::get_property(const std::string& name, int& value) const
 {
-   return static_cast<NodeImpl*>(this)->get_property_impl(name, value);
+   return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);
 }
 
-bool Node::get_property(const std::string& name, unsigned& value)
+bool Node::get_property(const std::string& name, unsigned& value) const
 {
-   int i_val;
-   bool res = static_cast<NodeImpl*>(this)->get_property_impl(name, i_val);
-   if (res) {
-      value = i_val;
-      return true;
-   }
-   return false;
+   return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);
 }
 
-bool Node::get_property(const std::string& name, int64_t& value)
+bool Node::get_property(const std::string& name, int64_t& value) const
 {
-   return static_cast<NodeImpl*>(this)->get_property_impl(name, value);
+   return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);
 }
 
-bool Node::get_property(const std::string& name, uint64_t& value)
+bool Node::get_property(const std::string& name, uint64_t& value) const
 {
-   int64_t i64_val;
-   bool res = static_cast<NodeImpl*>(this)->get_property_impl(name, i64_val);
-   if (res) {
-      value = i64_val;
-      return true;
-   }
-   return false;
+   return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);
 }
 
-bool Node::get_property(const std::string& name, float& value)
+bool Node::get_property(const std::string& name, float& value) const
 {
-   return static_cast<NodeImpl*>(this)->get_property_impl(name, value);
+   return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);
 }
 
-bool Node::get_property(const std::string& name, double& value)
+bool Node::get_property(const std::string& name, double& value) const
 {
-   return static_cast<NodeImpl*>(this)->get_property_impl(name, value);
+   return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);
 }
 
-bool Node::get_property(const std::string& name, long double& value)
+bool Node::get_property(const std::string& name, long double& value) const
 {
-   return static_cast<NodeImpl*>(this)->get_property_impl(name, value);
+   return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);
 }
 
-bool Node::get_property(const std::string& name, std::string& value)
+bool Node::get_property(const std::string& name, std::string& value) const
 {
-   return static_cast<NodeImpl*>(this)->get_property_impl(name, value);
+   return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);
 }
 
-bool Node::get_property(const std::string & name, std::vector<char>& value)
+bool Node::get_property(const std::string & name, std::vector<char>& value) const
 {
-   return static_cast<NodeImpl*>(this)->get_blob_property_impl(name, value);
+   return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);
 }
 
 std::shared_ptr<Node> Node::add_node(const std::string& name)

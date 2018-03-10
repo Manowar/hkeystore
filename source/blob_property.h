@@ -4,13 +4,21 @@
 #include <vector>
 #include "volume_file.h"
 
-class BlobPropery {
-public:
-   BlobPropery();
+struct BlobHolder {
+   const void* data;
+   size_t size;
 
-   std::vector<char> load(std::shared_ptr<VolumeFile>& volume_file);
-   void store(std::shared_ptr<VolumeFile>& volume_file, const void* data, size_t size);
-   void remove(std::shared_ptr<VolumeFile>& volume_file);
+   BlobHolder(const void* data, size_t size);
+   BlobHolder(const std::vector<char>& data);
+};
+
+class BlobProperty {
+public:
+   BlobProperty();
+
+   std::vector<char> load(std::shared_ptr<VolumeFile> volume_file);
+   void store(std::shared_ptr<VolumeFile> volume_file, const void* data, size_t size);
+   void remove(std::shared_ptr<VolumeFile> volume_file);
 
    template<typename Archive> 
    void serialize(Archive& archive, unsigned file_version);
@@ -25,7 +33,7 @@ private:
 #endif
 
 template<typename Archive>
-inline void BlobPropery::serialize(Archive & archive, unsigned file_version)
+inline void BlobProperty::serialize(Archive & archive, unsigned file_version)
 {
    archive & size;
    archive & record_id;
