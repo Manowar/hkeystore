@@ -36,7 +36,7 @@ std::shared_ptr<NodeImpl> VolumeImpl::get_node(const std::string& path)
    size_t i_path = 0;
    while (i_path < path.length()) {
       std::string sub_key = find_next_sub_key(path, i_path);
-      node = node->get_child(sub_key);
+      node = node->get_child_impl(sub_key);
       if (node == nullptr) {
          return nullptr;
       }

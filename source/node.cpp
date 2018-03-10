@@ -96,6 +96,11 @@ bool Node::get_property(const std::string & name, std::vector<char>& value) cons
    return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);
 }
 
+std::shared_ptr<Node> Node::get_child(const std::string& name)
+{
+   return static_cast<NodeImpl*>(this)->get_child_impl(name);
+}
+
 std::shared_ptr<Node> Node::add_child(const std::string& name)
 {
    return static_cast<NodeImpl*>(this)->add_child_impl(name);
@@ -109,4 +114,9 @@ void Node::remove_child(const std::string& name)
 void Node::rename_child(const std::string& name, const std::string& new_name)
 {
    static_cast<NodeImpl*>(this)->rename_child_impl(name, new_name);
+}
+
+bool Node::is_deleted() const
+{
+   return static_cast<const NodeImpl*>(this)->is_deleted_impl();
 }

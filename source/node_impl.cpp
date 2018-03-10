@@ -45,7 +45,7 @@ NodeImpl::NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::s
    lock_guard locker(lock);
 }
 
-std::shared_ptr<NodeImpl> NodeImpl::get_child(const std::string& name)
+std::shared_ptr<NodeImpl> NodeImpl::get_child_impl(const std::string& name)
 {
    lock_guard locker(lock);
 
@@ -173,7 +173,7 @@ std::shared_ptr<NodeImpl> NodeImpl::get_node_impl(const std::string& path)
    size_t i_path = 0;
    while (i_path < path.length()) {
       std::string sub_key = find_next_sub_key(path, i_path);
-      cur_node = cur_node->get_child(sub_key);
+      cur_node = cur_node->get_child_impl(sub_key);
       if (!cur_node) {
          return nullptr;
       }
@@ -224,6 +224,13 @@ void NodeImpl::remove_child_impl(const std::string & name)
    child_names_by_child_ids.erase(child_id);
 
    update();
+}
+
+bool NodeImpl::is_deleted_impl() const
+{
+   lock_guard locker(lock);
+
+   return record_id == DELETED_NODE_RECORD_ID;
 }
 
 
@@ -319,7 +326,9 @@ struct NodeToDelete {
    void operator=(const NodeToDelete&) = delete;
 
    ~NodeToDelete() {
-      node->lock.unlock();
+      if (node) {
+         node->lock.unlock();
+      }
    }   
 };
 
