@@ -7,7 +7,6 @@
 #include "node_impl.h"
 #include "utility.h"
 
-
 struct RemoveBlobPropertyVisitor : public boost::static_visitor<void>
 {
    RemoveBlobPropertyVisitor(std::shared_ptr<VolumeFile>& volume_file);
@@ -24,25 +23,20 @@ RemoveBlobPropertyVisitor::RemoveBlobPropertyVisitor(std::shared_ptr<VolumeFile>
 {
 }
 
-NodeImpl::NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file)
-   : child_id(child_id)
-   , parent(parent)
+NodeImpl::NodeImpl(std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file)
+   : parent(parent)
    , volume_file(volume_file)
 {
+   node_id = volume_file->allocate_next_node_id();
    save();
-
-   lock_guard locker(lock);
 }
 
-NodeImpl::NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, record_id_t record_id)
-   : child_id(child_id)
-   , parent(parent)
+NodeImpl::NodeImpl(std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, record_id_t record_id)
+   : parent(parent)
    , volume_file(volume_file)
    , record_id(record_id)
 {
    load();
-
-   lock_guard locker(lock);
 }
 
 std::shared_ptr<NodeImpl> NodeImpl::get_child_impl(const std::string& name)
@@ -57,8 +51,9 @@ std::shared_ptr<NodeImpl> NodeImpl::get_child_impl(const std::string& name)
    std::shared_ptr<NodeImpl> child = it->second.node.lock();
    if (!child) {
       // Node was not loaded. Load it.
-      child = std::make_shared<NodeImpl>(it->second.child_id, shared_from_this(), volume_file, it->second.record_id);
+      child = std::make_shared<NodeImpl>(shared_from_this(), volume_file, it->second.record_id);
       it->second.node = child;
+      assert(it->second.node_id == child->node_id);
    }
 
    return child;
@@ -96,6 +91,13 @@ bool NodeImpl::remove_property_impl(const std::string& name)
 
    update();
    return true;
+}
+
+void NodeImpl::set_time_to_live(std::chrono::milliseconds time)
+{
+   lock_guard locker(lock);
+   time_to_remove = std::chrono::system_clock::now() + time;
+   update();
 }
 
 template<>
@@ -166,17 +168,15 @@ std::shared_ptr<NodeImpl> NodeImpl::add_child_impl(const std::string& name)
       throw NodeAlreadyExists("Node " + name + " already exists.");
    }
 
-   child_id_t child_id = next_child_id++;
-
-   auto new_node = std::make_shared<NodeImpl>(child_id, shared_from_this(), volume_file);
+   auto new_node = std::make_shared<NodeImpl>(shared_from_this(), volume_file);
 
    ChildNode child_node;
    child_node.record_id = new_node->record_id;
    child_node.node = new_node;
-   child_node.child_id = child_id;
+   child_node.node_id = new_node->node_id;
 
    nodes.insert({ name, child_node });
-   child_names_by_child_ids.insert({ child_id, name });
+   child_names_by_ids.insert({ child_node.node_id, name });
 
    update();
 
@@ -209,13 +209,13 @@ void NodeImpl::rename_child_impl(const std::string& name, const std::string& new
       throw NodeAlreadyExists("Node with name '" + name + "' already exists");
    }
 
-   child_id_t child_id = it->second.child_id;
+   node_id_t child_node_id = it->second.node_id;
 
    auto child_node_handler = nodes.extract(it);
    child_node_handler.key() = new_name;
    nodes.insert(std::move(child_node_handler));
 
-   child_names_by_child_ids[child_id] = new_name;
+   child_names_by_ids[child_node_id] = new_name;
 
    update();
 }
@@ -231,13 +231,13 @@ void NodeImpl::remove_child_impl(const std::string & name)
 
    std::shared_ptr<NodeImpl> removing_node = it->second.node.lock();
    if (removing_node == nullptr) {
-      removing_node = std::make_shared<NodeImpl>(it->second.child_id, shared_from_this(), volume_file, it->second.record_id);
+      removing_node = std::make_shared<NodeImpl>(shared_from_this(), volume_file, it->second.record_id);
    }
    removing_node->delete_from_volume();
 
-   child_id_t child_id = it->second.child_id;
+   node_id_t child_node_id = it->second.node_id;
    nodes.erase(it);
-   child_names_by_child_ids.erase(child_id);
+   child_names_by_ids.erase(child_node_id);
 
    update();
 }
@@ -250,12 +250,13 @@ bool NodeImpl::is_deleted_impl() const
 }
 
 
-void NodeImpl::child_node_record_id_updated(child_id_t child_id, record_id_t new_record_id)
+void NodeImpl::child_node_record_id_updated(node_id_t child_node_id, record_id_t new_record_id)
 {
    lock_guard locker(lock);
 
-   auto it = child_names_by_child_ids.find(child_id);
-   if (it == child_names_by_child_ids.end()) {
+   auto it = child_names_by_ids.find(child_node_id);
+   if (it == child_names_by_ids.end()) {
+      // Child has been deleted
       return;
    }
 
@@ -275,6 +276,8 @@ void NodeImpl::save()
    boost::archive::binary_oarchive oa(os);
    oa & nodes;
    oa & properties;
+   oa & node_id;
+   oa & time_to_remove;
    std::string data = os.str();
    record_id = volume_file->allocate_record(data.c_str(), data.length());
 
@@ -302,10 +305,12 @@ void NodeImpl::load()
       boost::archive::binary_iarchive ia(is);
       ia & nodes;
       ia & properties;
+      ia & node_id;
+      ia & time_to_remove;
    });
 
    for (auto it = nodes.begin(); it != nodes.end(); ++it) {
-      it->second.child_id = next_child_id++;
+      child_names_by_ids.insert({ it->second.node_id, it->first });
    }
 }
 
@@ -319,7 +324,7 @@ void NodeImpl::update()
    save();
    if (old_record_id != record_id) {
       if (parent) {
-         parent->child_node_record_id_updated(child_id, record_id);
+         parent->child_node_record_id_updated(node_id, record_id);
       } else {
          volume_file->set_root_node_record_id(record_id);
       }
@@ -369,7 +374,7 @@ void NodeImpl::delete_from_volume()
          for (auto it = node->nodes.begin(); it != node->nodes.end(); ++it) {
             std::shared_ptr<NodeImpl> child = it->second.node.lock();
             if (!child) {
-               child = std::make_shared<NodeImpl>(it->second.child_id, shared_from_this(), volume_file, it->second.record_id);
+               child = std::make_shared<NodeImpl>(shared_from_this(), volume_file, it->second.record_id);
             }
             nodes_to_delete.push_back(NodeToDelete(child));
          }

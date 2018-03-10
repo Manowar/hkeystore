@@ -2,6 +2,7 @@
 #define HKEYSTORE_UTILITY_H
 
 #include <string>
+#include <chrono>
 #include <type_traits>
 
 std::string find_next_sub_key(const std::string& path, size_t& pos);
@@ -27,5 +28,31 @@ public:
       return false;
    }
 };
+
+//  std::chrono::time_point serialization
+namespace boost {
+   namespace archive {
+      template<typename Archive, typename clock>
+      void load(Archive& ar, std::chrono::time_point<clock>& tp, unsigned)
+      {
+         std::chrono::milliseconds::rep millis;
+         ar & millis;
+         tp = std::chrono::time_point<clock>(std::chrono::milliseconds(millis));
+      }
+
+      template<typename Archive, typename clock>
+      void save(Archive& ar, std::chrono::time_point<clock> const& tp, unsigned)
+      {
+         std::chrono::milliseconds::rep millis = std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch()).count();
+         ar & millis;
+      }
+
+      template<typename Archive, typename clock>
+      inline void serialize(Archive & ar, std::chrono::time_point<clock>& tp, unsigned version)
+      {
+         boost::serialization::split_free(ar, tp, version);
+      }
+   }
+}
 
 #endif

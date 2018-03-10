@@ -50,6 +50,7 @@ void VolumeFile::create_new_volume_file(const std::string& path)
    }
    header_block.available_free_records_block_offset = EMPTY_OFFSET;
    header_block.root_node_record_id = record_id_t(-1);
+   header_block.next_node_id = 0;
    memset(header_block.padding, 0, sizeof(header_block.padding));
    file.write(reinterpret_cast<char*>(&header_block), sizeof(HeaderBlock));
 
@@ -125,6 +126,14 @@ void VolumeFile::set_root_node_record_id(record_id_t record_id)
    lock_guard locker(lock);
    header_block.root_node_record_id = record_id;
    save_header_block();
+}
+
+node_id_t VolumeFile::allocate_next_node_id()
+{
+   lock_guard locker(lock);
+   node_id_t node_id = header_block.next_node_id++;
+   save_header_block();
+   return node_id;
 }
 
 record_id_t VolumeFile::allocate_record(const void* data, size_t size)

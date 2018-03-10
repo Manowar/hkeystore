@@ -30,11 +30,11 @@ private:
    record_id_t record_id;
 };
 
-#endif
-
 template<typename Archive>
 inline void BlobProperty::serialize(Archive & archive, unsigned file_version)
 {
    archive & size;
    archive & record_id;
 }
+
+#endif

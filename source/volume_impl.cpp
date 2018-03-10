@@ -9,14 +9,14 @@ VolumeImpl::VolumeImpl(const std::string& volume_file_path, bool create_if_not_e
          // Create new volume
          VolumeFile::create_new_volume_file(volume_file_path);
          std::shared_ptr<VolumeFile> volume_file = VolumeFile::open_volume_file(volume_file_path);
-         root = std::make_shared<NodeImpl>(0, nullptr, volume_file);
+         root = std::make_shared<NodeImpl>(nullptr, volume_file);
          return;
       }
    }
 
    // Open existing volume
    std::shared_ptr<VolumeFile> volume_file = VolumeFile::open_volume_file(volume_file_path);
-   root = std::make_shared<NodeImpl>(0, nullptr, volume_file, volume_file->get_root_node_record_id());
+   root = std::make_shared<NodeImpl>(nullptr, volume_file, volume_file->get_root_node_record_id());
 }
 
 void VolumeImpl::set_storage(Storage* storage)

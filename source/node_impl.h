@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <boost/variant.hpp>
+#include <chrono>
 
 #include <node.h>
 
@@ -17,13 +18,11 @@
 class NodeImpl : public Node, public std::enable_shared_from_this<NodeImpl>
 {
 public:
-   using child_id_t = uint64_t;
-
    // New node
-   NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file);
+   NodeImpl(std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file);
 
    // Existing node
-   NodeImpl(child_id_t child_id, std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, record_id_t record_id);
+   NodeImpl(std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, record_id_t record_id);
 
    std::shared_ptr<NodeImpl> get_child_impl(const std::string& name);
    std::shared_ptr<NodeImpl> add_child_impl(const std::string& name);
@@ -37,15 +36,18 @@ public:
    template<typename T> bool get_property_impl(const std::string& name, T& value) const;
    bool remove_property_impl(const std::string& name);
 
+   void set_time_to_live(std::chrono::milliseconds time);
+
 private:
    using mutex = std::mutex;
    using lock_guard = std::lock_guard<mutex>;
    using PropertyValue = boost::variant<int, unsigned, int64_t, uint64_t, float, double, long double, std::string, BlobProperty>;
+   using timepoint = std::chrono::time_point<std::chrono::system_clock>;
 
    struct ChildNode
    {
       record_id_t record_id;
-      child_id_t child_id;
+      node_id_t node_id;
       mutable std::weak_ptr<NodeImpl> node;
 
       template<typename Archive>
@@ -62,18 +64,17 @@ private:
    void update();
 
    void delete_from_volume();
-   void child_node_record_id_updated(child_id_t child_id, record_id_t new_record_id);
+   void child_node_record_id_updated(node_id_t child_node_id, record_id_t new_record_id);
 
    mutable mutex lock;
 
    record_id_t record_id;
-   child_id_t child_id;
+   node_id_t node_id;
+   timepoint time_to_remove;
 
-   child_id_t next_child_id = 0;
-
-   std::unordered_map<std::string, PropertyValue> properties;
    std::unordered_map<std::string, ChildNode> nodes;
-   std::unordered_map<child_id_t, std::string> child_names_by_child_ids;
+   std::unordered_map<std::string, PropertyValue> properties;
+   std::unordered_map<node_id_t, std::string> child_names_by_ids;
 
    std::shared_ptr<NodeImpl> parent;
    std::shared_ptr<VolumeFile> volume_file;
@@ -83,6 +84,7 @@ template<typename Archive>
 inline void NodeImpl::ChildNode::serialize(Archive& archive, unsigned file_version)
 {
    archive & record_id;
+   archive & node_id;
 }
 
 #endif

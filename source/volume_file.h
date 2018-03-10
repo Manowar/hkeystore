@@ -9,6 +9,7 @@
 #include <functional>
 
 using record_id_t = uint64_t;
+using node_id_t = uint64_t;
 
 // Storage for records with an arbitrary size
 //
@@ -35,6 +36,8 @@ public:
    record_id_t get_root_node_record_id() const;
    void set_root_node_record_id(record_id_t record_id);
 
+   node_id_t allocate_next_node_id();
+
    record_id_t allocate_record(const void* data, size_t size);
    void delete_record(record_id_t record_id);
    record_id_t resize_record(record_id_t record_id, const void* data, size_t size);
@@ -50,7 +53,8 @@ private:
       size_t free_records_block_offsets[SIZES_COUNT];
       size_t available_free_records_block_offset;
       record_id_t root_node_record_id;
-      char padding[CONTROL_BLOCK_SIZE - 4 - sizeof(int32_t) - SIZES_COUNT * sizeof(size_t) - sizeof(size_t) - sizeof(uint64_t)];
+      node_id_t next_node_id;
+      char padding[CONTROL_BLOCK_SIZE - 4 - sizeof(int32_t) - SIZES_COUNT * sizeof(size_t) - sizeof(size_t) - sizeof(uint64_t) - sizeof(node_id_t)];
    };
 
    static_assert(sizeof(HeaderBlock) == CONTROL_BLOCK_SIZE);

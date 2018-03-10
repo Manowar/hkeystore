@@ -42,6 +42,9 @@
     <ClInclude Include="blob_property.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="time_to_live_manager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="node.cpp">
@@ -69,6 +72,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="blob_property.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="time_to_live_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

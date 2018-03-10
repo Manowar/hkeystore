@@ -133,6 +133,7 @@
     <ClInclude Include="..\include\volume.h" />
     <ClInclude Include="blob_property.h" />
     <ClInclude Include="node_impl.h" />
+    <ClInclude Include="time_to_live_manager.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="volume_file.h" />
     <ClInclude Include="volume_impl.h" />
@@ -143,6 +144,7 @@
     <ClCompile Include="node.cpp" />
     <ClCompile Include="node_impl.cpp" />
     <ClCompile Include="storage.cpp" />
+    <ClCompile Include="time_to_live_manager.cpp" />
     <ClCompile Include="utility.cpp" />
     <ClCompile Include="volume.cpp" />
     <ClCompile Include="volume_file.cpp" />
