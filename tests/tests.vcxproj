@@ -143,7 +143,8 @@
     <ProjectReference />
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="logic_tests.hpp" />
+    <ClInclude Include="properties_tests.hpp" />
+    <ClInclude Include="node_tests.hpp" />
     <ClCompile Include="main.cpp" />
     <ClInclude Include="persistance_tests.hpp" />
   </ItemGroup>
