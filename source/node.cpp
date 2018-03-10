@@ -51,6 +51,11 @@ void Node::set_property(const std::string& name, void* data, size_t size)
    static_cast<NodeImpl*>(this)->set_property_impl(name, BlobHolder(data, size));
 }
 
+bool Node::remove_property(const std::string& name)
+{
+   return static_cast<NodeImpl*>(this)->remove_property_impl(name);
+}
+
 bool Node::get_property(const std::string& name, int& value) const
 {
    return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);

@@ -35,6 +35,7 @@ public:
 
    template<typename T> void set_property_impl(const std::string& name, const T& value);
    template<typename T> bool get_property_impl(const std::string& name, T& value) const;
+   bool remove_property_impl(const std::string& name);
 
 private:
    using mutex = std::mutex;

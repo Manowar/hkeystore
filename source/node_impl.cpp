@@ -82,8 +82,24 @@ void NodeImpl::set_property_impl(const std::string& name, const T& value)
    update();
 }
 
+bool NodeImpl::remove_property_impl(const std::string& name)
+{
+   lock_guard locker(lock);
+
+   auto it = properties.find(name);
+   if (it == properties.end()) {
+      return false;
+   }
+
+   boost::apply_visitor(RemoveBlobPropertyVisitor(volume_file), it->second);
+   properties.erase(it);
+
+   update();
+   return true;
+}
+
 template<>
-void NodeImpl::set_property_impl<BlobHolder>(const std::string & name, const BlobHolder& blob)
+void NodeImpl::set_property_impl<BlobHolder>(const std::string& name, const BlobHolder& blob)
 {
    if (name.find('.') != std::string::npos) {
       throw LogicError("Can't add property with name '" + name + "'. Property names can't contain dots");

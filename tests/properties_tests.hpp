@@ -96,6 +96,67 @@ BOOST_AUTO_TEST_CASE(test_conversions_blob)
    check_property_inaccessible<std::string>(storage.get(), "node.property");
 }
 
+BOOST_AUTO_TEST_CASE(test_change_property_type)
+{
+   remove("volume");
+   auto storage = std::make_unique<Storage>();
+   auto volume = storage->open_volume("volume", true);
+   storage->mount(volume, "");
+
+   std::vector<char> data;
+   data.resize(5);
+   memcpy(&data[0], "abcde", 5);
+
+   storage->add_node("", "node");
+
+   storage->set_property("node.property", 5);
+   check_property_value(storage.get(), "node.property", 5);
+   check_property_inaccessible<std::string>(storage.get(), "node.property");
+   check_property_inaccessible<std::vector<char>>(storage.get(), "node.property");
+
+   storage->set_property("node.property", "abc");
+   check_property_inaccessible<int>(storage.get(), "node.property");
+   check_property_value(storage.get(), "node.property", std::string("abc"));
+   check_property_inaccessible<std::vector<char>>(storage.get(), "node.property");
+
+   storage->set_property("node.property", data);
+   check_property_inaccessible<int>(storage.get(), "node.property");
+   check_property_inaccessible<std::string>(storage.get(), "node.property");
+   check_property_value(storage.get(), "node.property", data);
+
+   storage->set_property("node.property", 5);
+   check_property_value(storage.get(), "node.property", 5);
+   check_property_inaccessible<std::string>(storage.get(), "node.property");
+   check_property_inaccessible<std::vector<char>>(storage.get(), "node.property");
+}
+
+BOOST_AUTO_TEST_CASE(test_remove_property)
+{
+   remove("volume");
+   auto storage = std::make_unique<Storage>();
+   auto volume = storage->open_volume("volume", true);
+   storage->mount(volume, "");
+
+   std::vector<char> data;
+   data.resize(5);
+   memcpy(&data[0], "abcde", 5);
+
+   storage->add_node("", "node");
+   storage->set_property("node.property1", 5);
+   storage->set_property("node.property2", data);
+
+   check_property_value(storage.get(), "node.property1", 5);
+   check_property_value(storage.get(), "node.property2", data);
+
+   BOOST_CHECK(!storage->remove_property("node.property3"));
+   BOOST_CHECK(!storage->remove_property("node2.property1"));
+
+   BOOST_CHECK(storage->remove_property("node.property1"));
+   BOOST_CHECK(storage->remove_property("node.property2"));
+
+   check_property_inaccessible<int>(storage.get(), "node.property1");
+   check_property_inaccessible<std::vector<char>>(storage.get(), "node.property2");
+}
 
 BOOST_AUTO_TEST_SUITE_END()
 

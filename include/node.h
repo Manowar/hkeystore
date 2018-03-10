@@ -39,6 +39,8 @@ public:
    void set_property(const std::string& name, const std::string& value);
    void set_property(const std::string& name, const std::vector<char>& value);
    void set_property(const std::string& name, void* data, size_t size);
+
+   bool remove_property(const std::string& name);
 };
 
 #endif

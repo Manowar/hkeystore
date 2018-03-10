@@ -55,6 +55,8 @@ public:
    bool set_property(const std::string& path, const std::vector<char>& value);
    bool set_property(const std::string& path, void* data, size_t size);
 
+   bool remove_property(const std::string& path);
+
 private:
    struct MountPoint
    {

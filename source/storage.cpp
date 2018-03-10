@@ -239,6 +239,22 @@ bool Storage::set_property(const std::string& path, void* data, size_t size)
    return set_property_impl(path, BlobHolder(data, size));
 }
 
+bool Storage::remove_property(const std::string& path)
+{
+   std::string node_path;
+   std::string property_name;
+   if (!split_property_path(path, node_path, property_name)) {
+      throw LogicError(path + " is not a valid property path");
+   }
+
+   std::shared_ptr<NodeImpl> node = std::static_pointer_cast<NodeImpl>(get_node(node_path));
+   if (!node) {
+      return false;
+   }
+
+   return node->remove_property(property_name);
+}
+
 template<typename T>
 bool Storage::set_property_impl(const std::string& path, const T& value)
 {
