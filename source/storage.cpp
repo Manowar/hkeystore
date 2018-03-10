@@ -117,7 +117,12 @@ std::shared_ptr<Node> Storage::get_node(const std::string& path) const
 
 std::shared_ptr<Node> Storage::add_node(const std::string& path, const std::string& name)
 {
-   return get_node(path)->add_child(name);
+   std::shared_ptr<Node> parent = get_node(path);
+   if (parent == nullptr) {
+      throw NoSuchNode("Node '" + path + "' doesn't exist");
+   }
+
+   return parent->add_child(name);
 }
 
 void Storage::remove_node(const std::string& path)
