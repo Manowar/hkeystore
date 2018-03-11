@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "volume_impl.h"
 #include "node_impl.h"
 #include "utility.h"

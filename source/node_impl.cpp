@@ -1,4 +1,5 @@
 #include <sstream>
+#include <cassert>
 
 #include <errors.h>
 
@@ -9,7 +10,7 @@
 
 namespace hks {
 
-struct RemoveBlobPropertyVisitor : public boost::static_visitor<void>
+struct RemoveBlobPropertyVisitor 
 {
    RemoveBlobPropertyVisitor(std::shared_ptr<VolumeFile> volume_file);
 

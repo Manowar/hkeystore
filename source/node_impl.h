@@ -7,7 +7,6 @@
 #include <variant>
 #include <memory>
 #include <mutex>
-#include <boost/variant.hpp>
 #include <chrono>
 
 #include <node.h>
