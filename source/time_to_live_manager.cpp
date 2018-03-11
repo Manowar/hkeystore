@@ -46,6 +46,12 @@ void TimeToLiveManager::worker_function()
       }
 
       volume_impl->remove_node(node_path_to_remove);
+
+      {
+         lock_guard locker(lock);
+         next_time_to_remove = timepoint();
+         nodes_to_remove_tree->remove(node_to_remove_key);
+      }
    }
 }
 
