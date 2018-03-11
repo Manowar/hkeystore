@@ -48,6 +48,9 @@
     <ClInclude Include="bplus_tree.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="node_to_remove_key.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="node.cpp">

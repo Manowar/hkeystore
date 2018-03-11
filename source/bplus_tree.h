@@ -109,6 +109,7 @@ public:
    BplusTree(std::shared_ptr<VolumeFile> volume_file);
 
    /* abstract operations */
+   bool get_first(key_t* key, value_t* value) const;
    int search(const key_t& key, value_t* value) const;
    int remove(const key_t& key);
    int insert(const key_t& key, const value_t& value);

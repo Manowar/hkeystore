@@ -21,6 +21,8 @@ public:
    std::shared_ptr<VolumeFile> get_volume_file();
 
    std::shared_ptr<NodeImpl> get_node(const std::string& path);
+   bool remove_node(const std::vector<node_id_t>& path_to_remove);
+
 private:
    using NodesToRemoveTree = TimeToLiveManager::NodesToRemoveTree;
 

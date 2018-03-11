@@ -32,6 +32,10 @@ public:
 
    bool is_deleted_impl() const;
 
+   node_id_t get_node_id() const;
+   std::shared_ptr<NodeImpl> get_child_impl(node_id_t node_id);
+   bool remove_child_impl(node_id_t node_id);
+
    template<typename T> void set_property_impl(const std::string& name, const T& value);
    template<typename T> bool get_property_impl(const std::string& name, T& value) const;
    bool remove_property_impl(const std::string& name);
@@ -68,6 +72,9 @@ private:
    void child_node_record_id_updated(node_id_t child_node_id, record_id_t new_record_id);
 
    std::vector<node_id_t> get_unique_node_path();
+
+   std::shared_ptr<NodeImpl> do_get_child(const std::string& name);
+   void do_remove_child(const std::string& name);
 
    mutable mutex lock;
 

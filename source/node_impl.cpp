@@ -45,21 +45,7 @@ NodeImpl::NodeImpl(std::shared_ptr<NodeImpl> parent, VolumeImpl* volume_impl, re
 std::shared_ptr<NodeImpl> NodeImpl::get_child_impl(const std::string& name)
 {
    lock_guard locker(lock);
-
-   auto it = nodes.find(name);
-   if (it == nodes.end()) {
-      return nullptr;
-   } 
-
-   std::shared_ptr<NodeImpl> child = it->second.node.lock();
-   if (!child) {
-      // Node was not loaded. Load it.
-      child = std::make_shared<NodeImpl>(shared_from_this(), volume_impl, it->second.record_id);
-      it->second.node = child;
-      assert(it->second.node_id == child->node_id);
-   }
-
-   return child;
+   return do_get_child(name);
 }
 
 template<typename T>
@@ -227,26 +213,10 @@ void NodeImpl::rename_child_impl(const std::string& name, const std::string& new
    update();
 }
 
-void NodeImpl::remove_child_impl(const std::string & name)
+void NodeImpl::remove_child_impl(const std::string& name)
 {
    lock_guard locker(lock);
-
-   auto it = nodes.find(name);
-   if (it == nodes.end()) {
-      throw NoSuchNode("Node with name '" + name + "' doesn't exist");
-   }
-
-   std::shared_ptr<NodeImpl> removing_node = it->second.node.lock();
-   if (removing_node == nullptr) {
-      removing_node = std::make_shared<NodeImpl>(shared_from_this(), volume_impl, it->second.record_id);
-   }
-   removing_node->delete_from_volume();
-
-   node_id_t child_node_id = it->second.node_id;
-   nodes.erase(it);
-   child_names_by_ids.erase(child_node_id);
-
-   update();
+   do_remove_child(name);
 }
 
 bool NodeImpl::is_deleted_impl() const
@@ -256,6 +226,34 @@ bool NodeImpl::is_deleted_impl() const
    return record_id == DELETED_NODE_RECORD_ID;
 }
 
+node_id_t NodeImpl::get_node_id() const
+{
+   return node_id;
+}
+
+std::shared_ptr<NodeImpl> NodeImpl::get_child_impl(node_id_t node_id)
+{
+   lock_guard locker(lock);
+
+   auto it = child_names_by_ids.find(node_id);
+   if (it == child_names_by_ids.end()) {
+      return nullptr;
+   }
+
+   return do_get_child(it->second);
+}
+
+bool NodeImpl::remove_child_impl(node_id_t node_id)
+{
+   lock_guard locker(lock);
+   auto it = child_names_by_ids.find(node_id);
+   if (it == child_names_by_ids.end()) {
+      return false;
+   }
+
+   do_remove_child(it->second);
+   return true;
+}
 
 void NodeImpl::child_node_record_id_updated(node_id_t child_node_id, record_id_t new_record_id)
 {
@@ -287,6 +285,44 @@ std::vector<node_id_t> NodeImpl::get_unique_node_path()
       path.push_back(path_to_root[i]->node_id);
    }
    return path;
+}
+
+std::shared_ptr<NodeImpl> NodeImpl::do_get_child(const std::string & name)
+{
+   auto it = nodes.find(name);
+   if (it == nodes.end()) {
+      return nullptr;
+   }
+
+   std::shared_ptr<NodeImpl> child = it->second.node.lock();
+   if (!child) {
+      // Node was not loaded. Load it.
+      child = std::make_shared<NodeImpl>(shared_from_this(), volume_impl, it->second.record_id);
+      it->second.node = child;
+      assert(it->second.node_id == child->node_id);
+   }
+
+   return child;
+}
+
+void NodeImpl::do_remove_child(const std::string & name)
+{
+   auto it = nodes.find(name);
+   if (it == nodes.end()) {
+      throw NoSuchNode("Node with name '" + name + "' doesn't exist");
+   }
+
+   std::shared_ptr<NodeImpl> removing_node = it->second.node.lock();
+   if (removing_node == nullptr) {
+      removing_node = std::make_shared<NodeImpl>(shared_from_this(), volume_impl, it->second.record_id);
+   }
+   removing_node->delete_from_volume();
+
+   node_id_t child_node_id = it->second.node_id;
+   nodes.erase(it);
+   child_names_by_ids.erase(child_node_id);
+
+   update();
 }
 
 void NodeImpl::save()

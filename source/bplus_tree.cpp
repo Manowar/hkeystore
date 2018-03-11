@@ -13,6 +13,7 @@
 #include "volume_file.h"
 #include "bplus_tree.h"
 #include "utility.h"
+#include "node_to_remove_key.h"
 
 using std::swap;
 using std::binary_search;
@@ -87,6 +88,20 @@ inline int keycmp(const key_t &a, const key_t &b) {
       return 1;
    }
    return 0;
+}
+
+template<class key_t, class value_t>
+bool BplusTree<key_t, value_t>::get_first(key_t* key, value_t* value) const
+{
+   leaf_node_t leaf;
+   map(&leaf, search_leaf(key_t()));
+   if (leaf.n == 0) {
+      return false;
+   }
+
+   *key = leaf.children[0].key;
+   *value = leaf.children[0].value;
+   return true;
 }
 
 template<class key_t, class value_t>
@@ -667,4 +682,4 @@ typename BplusTree<key_t, value_t>::record_t* BplusTree<key_t, value_t>::find(le
 }
 
 
-template BplusTree<std::chrono::time_point<std::chrono::system_clock>, std::vector<node_id_t>>;
+template BplusTree<node_to_remove_key_t, std::vector<node_id_t>>;
