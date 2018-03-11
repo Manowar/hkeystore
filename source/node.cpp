@@ -56,6 +56,11 @@ bool Node::remove_property(const std::string& name)
    return static_cast<NodeImpl*>(this)->remove_property_impl(name);
 }
 
+void Node::set_time_to_live(std::chrono::milliseconds time)
+{
+   return static_cast<NodeImpl*>(this)->set_time_to_live(time);
+}
+
 bool Node::get_property(const std::string& name, int& value) const
 {
    return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);

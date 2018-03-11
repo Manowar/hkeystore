@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <chrono>
 
 class Node
 {
@@ -41,6 +42,8 @@ public:
    void set_property(const std::string& name, void* data, size_t size);
 
    bool remove_property(const std::string& name);
+
+   void set_time_to_live(std::chrono::milliseconds time);
 };
 
 #endif

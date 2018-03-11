@@ -65,7 +65,7 @@ bool VolumeImpl::remove_node(const std::vector<node_id_t>& path_to_remove)
    assert(root->get_node_id() == path_to_remove[0]);
    std::shared_ptr<NodeImpl> node = root;
 
-   for (size_t i = 0; i < path_to_remove.size() - 1; i++) {
+   for (size_t i = 1; i < path_to_remove.size() - 1; i++) {
       node = node->get_child_impl(path_to_remove[i]);
       if (node == nullptr) {
          return false;

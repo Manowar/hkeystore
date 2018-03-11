@@ -18,15 +18,18 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="properties_tests.hpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="persistance_tests.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="node_tests.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="properties_tests.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="time_to_live_tests.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

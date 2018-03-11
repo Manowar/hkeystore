@@ -147,6 +147,7 @@
     <ClInclude Include="node_tests.hpp" />
     <ClCompile Include="main.cpp" />
     <ClInclude Include="persistance_tests.hpp" />
+    <ClInclude Include="time_to_live_tests.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\source\source.vcxproj">
