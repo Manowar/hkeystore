@@ -6,14 +6,12 @@
 #include <chrono>
 #include <vector>
 #include <sstream>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
 
 #include "volume_file.h"
 #include "bplus_tree.h"
 #include "utility.h"
 #include "node_to_remove_key.h"
+#include "serialization.h"
 
 namespace hks {
 
@@ -652,8 +650,7 @@ template<class T>
 void BplusTree<key_t, value_t>::map(T* block, record_id_t record_id) const
 {
    volume_file->read_record(record_id, [&](std::istream& is) {
-      boost::archive::binary_iarchive ia(is);
-      ia & *block;
+      deserialize(is, *block);
    });
 }
 
@@ -662,8 +659,7 @@ template<class T>
 void BplusTree<key_t, value_t>::unmap(T* block, record_id_t& record_id)
 {
    std::ostringstream os;
-   boost::archive::binary_oarchive oa(os);
-   oa & *block;
+   serialize(os, *block);
    std::string data = os.str();
 
    if (record_id == EMPTY_RECORD_ID) {
@@ -681,6 +677,94 @@ typename BplusTree<key_t, value_t>::index_t* BplusTree<key_t, value_t>::find(int
 template<class key_t, class value_t>
 typename BplusTree<key_t, value_t>::record_t* BplusTree<key_t, value_t>::find(leaf_node_t& node, const key_t& key) {
    return lower_bound(begin(node), end(node), key, record_t_compare<key_t, value_t, record_t>());
+}
+
+template<typename key_t, typename value_t>
+inline void BplusTree<key_t, value_t>::index_t::serialize(std::ostream& os) const
+{
+   hks::serialize(os, key);
+   hks::serialize(os, child);
+}
+
+template<typename key_t, typename value_t>
+inline void BplusTree<key_t, value_t>::index_t::deserialize(std::istream& is)
+{
+   hks::deserialize(is, key);
+   hks::deserialize(is, child);
+}
+
+template<typename key_t, typename value_t>
+inline void BplusTree<key_t, value_t>::record_t::serialize(std::ostream& os) const
+{
+   hks::serialize(os, key);
+   hks::serialize(os, value);
+}
+
+template<typename key_t, typename value_t>
+inline void BplusTree<key_t, value_t>::record_t::deserialize(std::istream& is)
+{
+   hks::deserialize(is, key);
+   hks::deserialize(is, value);
+}
+
+template<typename key_t, typename value_t>
+void BplusTree<key_t, value_t>::meta_t::deserialize(std::istream& is)
+{
+   hks::deserialize(is, order);
+   hks::deserialize(is, internal_node_num);
+   hks::deserialize(is, leaf_node_num);
+   hks::deserialize(is, height);
+   hks::deserialize(is, root_offset);
+}
+
+template<typename key_t, typename value_t>
+void BplusTree<key_t, value_t>::meta_t::serialize(std::ostream& os) const
+{
+   hks::serialize(os, order);
+   hks::serialize(os, internal_node_num);
+   hks::serialize(os, leaf_node_num);
+   hks::serialize(os, height);
+   hks::serialize(os, root_offset);
+}
+
+template<typename key_t, typename value_t>
+void BplusTree<key_t, value_t>::internal_node_t::deserialize(std::istream& is)
+{
+   hks::deserialize(is, parent);
+   hks::deserialize(is, next);
+   hks::deserialize(is, prev);
+   hks::deserialize(is, n);
+   hks::deserialize(is, children);
+}
+
+template<typename key_t, typename value_t>
+void BplusTree<key_t, value_t>::internal_node_t::serialize(std::ostream& os) const
+{
+   hks::serialize(os, parent);
+   hks::serialize(os, next);
+   hks::serialize(os, prev);
+   hks::serialize(os, n);
+   hks::serialize(os, children);
+}
+
+template<typename key_t, typename value_t>
+void BplusTree<key_t, value_t>::leaf_node_t::deserialize(std::istream& is)
+{
+   hks::deserialize(is, parent);
+   hks::deserialize(is, next);
+   hks::deserialize(is, prev);
+   hks::deserialize(is, n);
+   hks::deserialize(is, children);
+}
+
+template<typename key_t, typename value_t>
+void BplusTree<key_t, value_t>::leaf_node_t::serialize(std::ostream& os) const
+{
+   hks::serialize(os, parent);
+   hks::serialize(os, next);
+   hks::serialize(os, prev);
+   hks::serialize(os, n);
+   hks::serialize(os, children);
 }
 
 

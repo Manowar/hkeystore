@@ -103,7 +103,7 @@ bool Node::get_property(const std::string& name, std::string& value) const
    return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);
 }
 
-bool Node::get_property(const std::string & name, std::vector<char>& value) const
+bool Node::get_property(const std::string& name, std::vector<char>& value) const
 {
    return static_cast<const NodeImpl*>(this)->get_property_impl(name, value);
 }

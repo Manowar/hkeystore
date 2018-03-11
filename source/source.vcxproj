@@ -135,6 +135,7 @@
     <ClInclude Include="bplus_tree.h" />
     <ClInclude Include="node_impl.h" />
     <ClInclude Include="node_to_remove_key.h" />
+    <ClInclude Include="serialization.h" />
     <ClInclude Include="time_to_live_manager.h" />
     <ClInclude Include="utility.h" />
     <ClInclude Include="volume_file.h" />

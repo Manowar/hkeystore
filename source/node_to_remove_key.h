@@ -2,7 +2,9 @@
 #define HKEYSTORE_NODE_TO_REMOVE_KEY_H
 
 #include <chrono>
+#include <iostream>
 #include "volume_file.h"
+#include "serialization.h"
 
 namespace hks {
 
@@ -18,8 +20,17 @@ struct node_to_remove_key_t
 
    bool operator < (const node_to_remove_key_t& rhs) const;
 
-   template<class Archive>
-   void serialize(Archive& ar, unsigned version);
+   void serialize(std::ostream& os) const
+   {
+      hks::serialize(os, time);
+      hks::serialize(os, node_id);
+   }
+
+   void deserialize(std::istream& is)
+   {
+      hks::deserialize(is, time);
+      hks::deserialize(is, node_id);
+   }
 };
 
 inline node_to_remove_key_t::node_to_remove_key_t()
@@ -43,13 +54,6 @@ inline bool node_to_remove_key_t::operator < (const node_to_remove_key_t& rhs) c
       return false;
    }
    return node_id < rhs.node_id;
-}
-
-template<class Archive>
-void node_to_remove_key_t::serialize(Archive& ar, unsigned version)
-{
-   ar & time;
-   ar & node_id;
 }
 
 }

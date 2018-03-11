@@ -20,6 +20,8 @@ namespace hks {
 class NodeImpl : public Node, public std::enable_shared_from_this<NodeImpl>
 {
 public:
+   using PropertyValue = std::variant<int, unsigned, int64_t, uint64_t, float, double, long double, std::string, BlobProperty>;
+
    // New node
    NodeImpl(std::shared_ptr<NodeImpl> parent, VolumeImpl* volume_impl);
 
@@ -47,7 +49,6 @@ public:
 private:
    using mutex = std::mutex;
    using lock_guard = std::lock_guard<mutex>;
-   using PropertyValue = boost::variant<int, unsigned, int64_t, uint64_t, float, double, long double, std::string, BlobProperty>;
    using timepoint = std::chrono::time_point<std::chrono::system_clock>;
 
    struct ChildNode
@@ -56,15 +57,15 @@ private:
       node_id_t node_id;
       mutable std::weak_ptr<NodeImpl> node;
 
-      template<typename Archive>
-      void serialize(Archive& archive, unsigned file_version);
+      void serialize(std::ostream& os) const;
+      void deserialize(std::istream& os);
    };
 
    friend struct NodeToDelete;
 
    static const uint64_t DELETED_NODE_RECORD_ID = record_id_t(-1);
 
-   void save();
+   void save(bool create_new);
    void save_nodes();
    void load();
    void update();
@@ -92,11 +93,17 @@ private:
    VolumeImpl* volume_impl;
 };
 
-template<typename Archive>
-inline void NodeImpl::ChildNode::serialize(Archive& archive, unsigned file_version)
+
+inline void NodeImpl::ChildNode::serialize(std::ostream& os) const
 {
-   archive & record_id;
-   archive & node_id;
+   hks::serialize(os, record_id);
+   hks::serialize(os, node_id);
+}
+
+inline void NodeImpl::ChildNode::deserialize(std::istream& is)
+{
+   hks::deserialize(is, record_id);
+   hks::deserialize(is, node_id);
 }
 
 }

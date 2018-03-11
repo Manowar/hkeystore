@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(test_time_to_live)
    node1->set_time_to_live(200ms);
    node2->set_time_to_live(100ms);
    
-   std::this_thread::sleep_for(100ms);
+   std::this_thread::sleep_for(150ms);
    BOOST_CHECK(!node1->is_deleted());
    BOOST_CHECK(node2->is_deleted());
    BOOST_CHECK(!node3->is_deleted());

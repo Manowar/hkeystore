@@ -5,6 +5,7 @@
 // Also added support for variable-size values
 
 #include <memory>
+#include <iostream>
 #include "volume_file.h"
 
 namespace hks {
@@ -16,12 +17,8 @@ class BplusTree {
       key_t key;
       record_id_t child;
 
-      template<class Archive>
-      void serialize(Archive & ar, unsigned version)
-      {
-         ar & key;
-         ar & child;
-      }
+      void serialize(std::ostream& os) const;
+      void deserialize(std::istream& is);
    };
 
    /* the final record of value */
@@ -29,12 +26,8 @@ class BplusTree {
       key_t key;
       value_t value;
 
-      template<class Archive>
-      void serialize(Archive & ar, unsigned version)
-      {
-         ar & key;
-         ar & value;
-      }
+      void serialize(std::ostream& os) const;
+      void deserialize(std::istream& is);
    };
 
    static const int BP_ORDER = 100;
@@ -47,15 +40,8 @@ class BplusTree {
       size_t height;            /* height of tree (exclude leafs) */
       record_id_t root_offset; /* where is the root of internal nodes */
 
-      template<class Archive> 
-      void serialize(Archive & ar, unsigned version)
-      {
-         ar & order;
-         ar & internal_node_num;
-         ar & leaf_node_num;
-         ar & height;
-         ar & root_offset;
-      }
+      void serialize(std::ostream& os) const;
+      void deserialize(std::istream& is);
    } meta_t;
 
    /***
@@ -70,15 +56,8 @@ class BplusTree {
       size_t n; /* how many children */
       index_t children[BP_ORDER];
 
-      template<class Archive>
-      void serialize(Archive & ar, unsigned version)
-      {
-         ar & parent;
-         ar & next;
-         ar & prev;
-         ar & n;
-         ar & children;
-      }
+      void serialize(std::ostream& os) const;
+      void deserialize(std::istream& is);
    };
 
    /* leaf node block */
@@ -91,15 +70,8 @@ class BplusTree {
       size_t n;
       record_t children[BP_ORDER];
 
-      template<class Archive>
-      void serialize(Archive & ar, unsigned version)
-      {
-         ar & parent;
-         ar & next;
-         ar & prev;
-         ar & n;
-         ar & children;
-      }
+      void serialize(std::ostream& os) const;
+      void deserialize(std::istream& is);
    };
 
    static const record_id_t EMPTY_RECORD_ID = record_id_t(-1);

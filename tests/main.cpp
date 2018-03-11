@@ -5,3 +5,4 @@
 #include "properties_tests.hpp"
 #include "persistance_tests.hpp"
 #include "time_to_live_tests.hpp"
+#include "load_tests.hpp"

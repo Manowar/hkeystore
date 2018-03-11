@@ -36,7 +36,7 @@ Storage* VolumeImpl::get_storage()
    return storage;
 }
 
-TimeToLiveManager * VolumeImpl::get_time_to_live_manager()
+TimeToLiveManager* VolumeImpl::get_time_to_live_manager()
 {
    return time_to_live_manager.get();
 }

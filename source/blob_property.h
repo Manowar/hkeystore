@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "volume_file.h"
+#include "serialization.h"
 
 namespace hks {
 
@@ -22,8 +23,8 @@ public:
    void store(std::shared_ptr<VolumeFile> volume_file, const void* data, size_t size);
    void remove(std::shared_ptr<VolumeFile> volume_file);
 
-   template<typename Archive> 
-   void serialize(Archive& archive, unsigned file_version);
+   void serialize(std::ostream& os) const;
+   void deserialize(std::istream& is);
 
 private:
    static const record_id_t INVALID_RECORD_ID = record_id_t(-1);
@@ -32,11 +33,16 @@ private:
    record_id_t record_id;
 };
 
-template<typename Archive>
-inline void BlobProperty::serialize(Archive & archive, unsigned file_version)
+inline void BlobProperty::serialize(std::ostream& os) const
 {
-   archive & size;
-   archive & record_id;
+   hks::serialize(os, size);
+   hks::serialize(os, record_id);
+}
+
+inline void BlobProperty::deserialize(std::istream& is) 
+{
+   hks::deserialize(is, size);
+   hks::deserialize(is, record_id);
 }
 
 }
