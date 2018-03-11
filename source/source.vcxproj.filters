@@ -45,6 +45,9 @@
     <ClInclude Include="time_to_live_manager.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="bplus_tree.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="node.cpp">
@@ -75,6 +78,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="time_to_live_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bplus_tree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

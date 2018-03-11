@@ -96,6 +96,9 @@ bool NodeImpl::remove_property_impl(const std::string& name)
 void NodeImpl::set_time_to_live(std::chrono::milliseconds time)
 {
    lock_guard locker(lock);
+   if (parent == nullptr) {
+      throw LogicError("Can't delete root node");
+   }
    time_to_remove = std::chrono::system_clock::now() + time;
    update();
 }
@@ -264,6 +267,22 @@ void NodeImpl::child_node_record_id_updated(node_id_t child_node_id, record_id_t
    nodes[child_name].record_id = new_record_id;
 
    save_nodes();
+}
+
+std::vector<node_id_t> NodeImpl::get_unique_node_path()
+{
+   std::vector<std::shared_ptr<NodeImpl>> path_to_root;
+   std::shared_ptr<NodeImpl> node = shared_from_this();
+   while (node) {
+      path_to_root.push_back(node);
+      node = node->parent;
+   }
+
+   std::vector<node_id_t> path;
+   for (size_t i = path_to_root.size(); i-- > 0; ) {
+      path.push_back(path_to_root[i]->node_id);
+   }
+   return path;
 }
 
 void NodeImpl::save()

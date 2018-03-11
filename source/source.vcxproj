@@ -132,6 +132,7 @@
     <ClInclude Include="..\include\storage.h" />
     <ClInclude Include="..\include\volume.h" />
     <ClInclude Include="blob_property.h" />
+    <ClInclude Include="bplus_tree.h" />
     <ClInclude Include="node_impl.h" />
     <ClInclude Include="time_to_live_manager.h" />
     <ClInclude Include="utility.h" />
@@ -141,6 +142,7 @@
   <ItemGroup>
     <ClCompile Include="..\include\errors.cpp" />
     <ClCompile Include="blob_property.cpp" />
+    <ClCompile Include="bplus_tree.cpp" />
     <ClCompile Include="node.cpp" />
     <ClCompile Include="node_impl.cpp" />
     <ClCompile Include="storage.cpp" />

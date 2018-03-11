@@ -64,7 +64,10 @@ private:
    void update();
 
    void delete_from_volume();
+
    void child_node_record_id_updated(node_id_t child_node_id, record_id_t new_record_id);
+
+   std::vector<node_id_t> get_unique_node_path();
 
    mutable mutex lock;
 
