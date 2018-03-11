@@ -1,6 +1,9 @@
 #include "storage.h"
 #include "node.h"
 
+using namespace hks;
+
+
 BOOST_AUTO_TEST_SUITE(persistance_tests)
 
 BOOST_AUTO_TEST_CASE(load_volume)

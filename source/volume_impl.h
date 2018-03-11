@@ -9,6 +9,8 @@
 #include "time_to_live_manager.h"
 #include "bplus_tree.h"
 
+namespace hks {
+
 class VolumeImpl : public Volume
 {
 public:
@@ -32,6 +34,8 @@ private:
    std::unique_ptr<TimeToLiveManager> time_to_live_manager;
    std::shared_ptr<VolumeFile> volume_file;
 };
+
+}
 
 #endif
 

@@ -9,6 +9,8 @@
 #include "bplus_tree.h"
 #include "node_to_remove_key.h"
 
+namespace hks {
+
 class VolumeImpl;
 
 class TimeToLiveManager
@@ -39,5 +41,7 @@ private:
    VolumeImpl* volume_impl;
    timepoint next_time_to_remove;
 };
+
+}
 
 #endif

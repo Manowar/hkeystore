@@ -5,6 +5,8 @@
 #include <chrono>
 #include <type_traits>
 
+namespace hks {
+
 std::string find_next_sub_key(const std::string& path, size_t& pos);
 
 std::string get_path_tail(const std::string& path, size_t pos);
@@ -28,6 +30,8 @@ public:
       return false;
    }
 };
+
+}
 
 //  std::chrono::time_point serialization
 namespace boost {

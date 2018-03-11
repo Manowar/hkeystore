@@ -1,5 +1,7 @@
 #include "blob_property.h"
 
+namespace hks {
+
 BlobProperty::BlobProperty()
    : size(0)
    , record_id(INVALID_RECORD_ID)
@@ -47,4 +49,6 @@ BlobHolder::BlobHolder(const std::vector<char>& data)
    : data(&data[0])
    , size(data.size())
 {
+}
+
 }

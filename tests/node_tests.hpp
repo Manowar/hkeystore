@@ -2,6 +2,9 @@
 #include "node.h"
 #include "errors.h"
 
+using namespace hks;
+
+
 BOOST_AUTO_TEST_SUITE(node_tests)
 
 BOOST_AUTO_TEST_CASE(test_add_node)

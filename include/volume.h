@@ -1,6 +1,8 @@
 #ifndef HKEYSTORE_VOLUME_H
 #define HKEYSTORE_VOLUME_H
 
+namespace hks {
+
 class Volume
 {
 protected:
@@ -11,5 +13,7 @@ protected:
 public:
    virtual ~Volume() = default;
 };
+
+}
 
 #endif

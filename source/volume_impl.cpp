@@ -2,6 +2,8 @@
 #include "node_impl.h"
 #include "utility.h"
 
+namespace hks {
+
 VolumeImpl::VolumeImpl(const std::string& volume_file_path, bool create_if_not_exist)
 {
    if (create_if_not_exist) {
@@ -73,4 +75,6 @@ bool VolumeImpl::remove_node(const std::vector<node_id_t>& path_to_remove)
    }
 
    return node->remove_child_impl(path_to_remove[path_to_remove.size() - 1]);
+}
+
 }

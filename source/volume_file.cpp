@@ -8,6 +8,8 @@
 
 #include "volume_file.h"
 
+namespace hks {
+
 struct RecordSizesInitializer {
    constexpr RecordSizesInitializer() 
       : arr()
@@ -333,5 +335,7 @@ void VolumeFile::from_record_id(record_id_t record_id, int& i_size, size_t& offs
 {
    i_size = static_cast<int>(record_id >> RECORD_ID_I_SIZE_SHIFT);
    offset = static_cast<size_t>(record_id & ((uint64_t(1) << RECORD_ID_I_SIZE_SHIFT) - 1));
+}
+
 }
 

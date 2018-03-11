@@ -4,6 +4,8 @@
 #include <chrono>
 #include "volume_file.h"
 
+namespace hks {
+
 struct node_to_remove_key_t
 {
    using timepoint = std::chrono::time_point<std::chrono::system_clock>;
@@ -48,6 +50,8 @@ void node_to_remove_key_t::serialize(Archive& ar, unsigned version)
 {
    ar & time;
    ar & node_id;
+}
+
 }
 
 #endif

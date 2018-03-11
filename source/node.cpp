@@ -1,6 +1,8 @@
 #include <node.h>
 #include "node_impl.h"
 
+namespace hks {
+
 void Node::set_property(const std::string& name, int value)
 {
    static_cast<NodeImpl*>(this)->set_property_impl(name, value);
@@ -129,4 +131,6 @@ void Node::rename_child(const std::string& name, const std::string& new_name)
 bool Node::is_deleted() const
 {
    return static_cast<const NodeImpl*>(this)->is_deleted_impl();
+}
+
 }

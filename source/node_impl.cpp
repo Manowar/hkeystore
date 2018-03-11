@@ -10,6 +10,8 @@
 #include "utility.h"
 #include "time_to_live_manager.h"
 
+namespace hks {
+
 struct RemoveBlobPropertyVisitor : public boost::static_visitor<void>
 {
    RemoveBlobPropertyVisitor(std::shared_ptr<VolumeFile> volume_file);
@@ -470,3 +472,5 @@ template void NodeImpl::set_property_impl<double>(const std::string& name, const
 template void NodeImpl::set_property_impl<long double>(const std::string& name, const long double& value);
 template void NodeImpl::set_property_impl<std::string>(const std::string& name, const std::string& value);
 template void NodeImpl::set_property_impl<BlobHolder>(const std::string& name, const BlobHolder& value);
+
+}

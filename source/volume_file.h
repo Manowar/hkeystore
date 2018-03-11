@@ -8,6 +8,8 @@
 #include <mutex>
 #include <functional>
 
+namespace hks {
+
 using record_id_t = uint64_t;
 using node_id_t = uint64_t;
 
@@ -93,6 +95,8 @@ private:
    HeaderBlock header_block;
    std::array<FreeRecordsBlock, SIZES_COUNT> free_records_blocks;
 };
+
+}
 
 #endif
 

@@ -1,6 +1,8 @@
 #include <cassert>
 #include "utility.h"
 
+namespace hks {
+
 std::string find_next_sub_key(const std::string& path, size_t& pos)
 {
    size_t dot_offset = pos == 0 ? 0 : 1;
@@ -49,4 +51,6 @@ void split_node_path(const std::string& node_path, std::string& parent_path, std
       parent_path = node_path.substr(0, i_dot);
       node_name = node_path.substr(i_dot + 1);
    }
+}
+
 }

@@ -1,6 +1,8 @@
 #include "storage.h"
 #include "node.h"
 
+using namespace hks;
+
 BOOST_AUTO_TEST_SUITE(properties_tests)
 
 template<typename T> 

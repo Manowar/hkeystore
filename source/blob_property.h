@@ -4,6 +4,8 @@
 #include <vector>
 #include "volume_file.h"
 
+namespace hks {
+
 struct BlobHolder {
    const void* data;
    size_t size;
@@ -35,6 +37,8 @@ inline void BlobProperty::serialize(Archive & archive, unsigned file_version)
 {
    archive & size;
    archive & record_id;
+}
+
 }
 
 #endif

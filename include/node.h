@@ -6,6 +6,8 @@
 #include <vector>
 #include <chrono>
 
+namespace hks {
+   
 class Node
 {
 public:
@@ -45,5 +47,7 @@ public:
 
    void set_time_to_live(std::chrono::milliseconds time);
 };
+
+}
 
 #endif

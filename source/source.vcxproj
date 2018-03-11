@@ -149,7 +149,6 @@
     <ClCompile Include="storage.cpp" />
     <ClCompile Include="time_to_live_manager.cpp" />
     <ClCompile Include="utility.cpp" />
-    <ClCompile Include="volume.cpp" />
     <ClCompile Include="volume_file.cpp" />
     <ClCompile Include="volume_impl.cpp" />
   </ItemGroup>

@@ -59,9 +59,6 @@
     <ClCompile Include="storage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="volume.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\include\errors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

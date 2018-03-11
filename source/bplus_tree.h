@@ -7,6 +7,8 @@
 #include <memory>
 #include "volume_file.h"
 
+namespace hks {
+
 template<typename key_t, typename value_t>
 class BplusTree {
    /* internal nodes' index segment */
@@ -200,6 +202,6 @@ private:
    static record_t* find(leaf_node_t& node, const key_t& key);
 };
 
-
+}
 
 #endif 

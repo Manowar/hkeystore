@@ -15,6 +15,8 @@
 #include "utility.h"
 #include "node_to_remove_key.h"
 
+namespace hks {
+
 using std::swap;
 using std::binary_search;
 using std::lower_bound;
@@ -683,3 +685,5 @@ typename BplusTree<key_t, value_t>::record_t* BplusTree<key_t, value_t>::find(le
 
 
 template BplusTree<node_to_remove_key_t, std::vector<node_id_t>>;
+
+}

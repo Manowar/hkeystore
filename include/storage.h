@@ -10,6 +10,8 @@
 
 #include <volume.h>
 
+namespace hks {
+
 class Node;
 class VolumeImpl;
 class NodeImpl;
@@ -81,5 +83,7 @@ private:
    mutable std::shared_mutex volumes_lock;
    MountNode volumes_root;
 };
+
+}
 
 #endif

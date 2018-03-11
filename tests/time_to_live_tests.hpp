@@ -4,6 +4,8 @@
 #include "storage.h"
 #include "node.h"
 
+using namespace hks;
+
 BOOST_AUTO_TEST_SUITE(time_to_live_tests)
 
 BOOST_AUTO_TEST_CASE(test_time_to_live)

@@ -15,6 +15,8 @@
 #include "volume_impl.h"
 #include "blob_property.h"
 
+namespace hks {
+
 class NodeImpl : public Node, public std::enable_shared_from_this<NodeImpl>
 {
 public:
@@ -95,6 +97,8 @@ inline void NodeImpl::ChildNode::serialize(Archive& archive, unsigned file_versi
 {
    archive & record_id;
    archive & node_id;
+}
+
 }
 
 #endif

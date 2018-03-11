@@ -1,5 +1,7 @@
 #include <errors.h>
 
+namespace hks {
+
 Exception::Exception(const std::string& error)
    : error(error)
 {
@@ -33,4 +35,6 @@ IOError::IOError(const std::string& error)
 TooLargeNode::TooLargeNode(const std::string& error)
    : Exception(error)
 {
+}
+
 }

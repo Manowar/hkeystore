@@ -4,6 +4,7 @@
 #include "utility.h"
 #include "node_impl.h"
 
+namespace hks {
 
 std::shared_ptr<Volume> Storage::open_volume(const std::string& path, bool create_if_not_exist)
 {
@@ -301,4 +302,6 @@ Storage::MountPoint::MountPoint(std::shared_ptr<VolumeImpl>& volume, const std::
    , node_path(node_path)
    , node(node)
 {
+}
+
 }

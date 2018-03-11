@@ -4,6 +4,8 @@
 #include <exception>
 #include <string>
 
+namespace hks {
+
 class Exception : public std::exception
 {
 public:
@@ -43,4 +45,5 @@ public:
    explicit TooLargeNode(const std::string& error);
 };
 
+}
 #endif
