@@ -12,17 +12,17 @@
 
 #include <node.h>
 
-#include "volume_file.h"
+#include "volume_impl.h"
 #include "blob_property.h"
 
 class NodeImpl : public Node, public std::enable_shared_from_this<NodeImpl>
 {
 public:
    // New node
-   NodeImpl(std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file);
+   NodeImpl(std::shared_ptr<NodeImpl> parent, VolumeImpl* volume_impl);
 
    // Existing node
-   NodeImpl(std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, record_id_t record_id);
+   NodeImpl(std::shared_ptr<NodeImpl> parent, VolumeImpl* volume_impl, record_id_t record_id);
 
    std::shared_ptr<NodeImpl> get_child_impl(const std::string& name);
    std::shared_ptr<NodeImpl> add_child_impl(const std::string& name);
@@ -80,7 +80,7 @@ private:
    std::unordered_map<node_id_t, std::string> child_names_by_ids;
 
    std::shared_ptr<NodeImpl> parent;
-   std::shared_ptr<VolumeFile> volume_file;
+   VolumeImpl* volume_impl;
 };
 
 template<typename Archive>

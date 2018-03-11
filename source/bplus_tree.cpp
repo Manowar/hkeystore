@@ -52,7 +52,7 @@ BplusTree<key_t, value_t>::BplusTree(std::shared_ptr<VolumeFile> volume_file, re
 }
 
 template<class key_t, class value_t>
-BplusTree<key_t, value_t>::BplusTree(std::shared_ptr<VolumeFile> volume_file, record_id_t& meta_record_id, init_empty empty)
+BplusTree<key_t, value_t>::BplusTree(std::shared_ptr<VolumeFile> volume_file)
    : volume_file(volume_file)
 {
    // init default meta
@@ -76,8 +76,6 @@ BplusTree<key_t, value_t>::BplusTree(std::shared_ptr<VolumeFile> volume_file, re
    unmap(&leaf, root.children[0].child);
    unmap(&root, meta.root_offset);
    unmap(&meta, meta_record_id);
-
-   this->meta_record_id = meta_record_id;
 }
 
 template<class key_t>
@@ -242,6 +240,12 @@ int BplusTree<key_t, value_t>::insert(const key_t& key, const value_t& value)
    }
 
    return 0;
+}
+
+template<typename key_t, typename value_t>
+record_id_t BplusTree<key_t, value_t>::get_record_id() const
+{
+   return meta_record_id;
 }
 
 template<class key_t, class value_t>

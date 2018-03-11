@@ -5,10 +5,10 @@
 // Also added support for variable-size values
 
 #include <memory>
+#include "volume_file.h"
 
 template<typename key_t, typename value_t>
 class BplusTree {
-public:
    /* internal nodes' index segment */
    struct index_t {
       key_t key;
@@ -35,7 +35,6 @@ public:
       }
    };
 
-private:
    static const int BP_ORDER = 100;
 
    /* meta information of B+ tree */
@@ -106,18 +105,15 @@ private:
 public:
    BplusTree(std::shared_ptr<VolumeFile> volume_file, record_id_t meta_record_id);
 
-   class init_empty {};
    /* init empty tree */
-   BplusTree(std::shared_ptr<VolumeFile> volume_file, record_id_t& meta_record_id, init_empty empty);
+   BplusTree(std::shared_ptr<VolumeFile> volume_file);
 
    /* abstract operations */
    int search(const key_t& key, value_t* value) const;
    int remove(const key_t& key);
    int insert(const key_t& key, const value_t& value);
 
-   meta_t get_meta() const {
-      return meta;
-   };
+   record_id_t get_record_id() const;
 
 private:
    meta_t meta;

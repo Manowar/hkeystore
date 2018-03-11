@@ -3,37 +3,40 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/variant.hpp>
+
 #include <errors.h>
+
 #include "node_impl.h"
 #include "utility.h"
+#include "time_to_live_manager.h"
 
 struct RemoveBlobPropertyVisitor : public boost::static_visitor<void>
 {
-   RemoveBlobPropertyVisitor(std::shared_ptr<VolumeFile>& volume_file);
+   RemoveBlobPropertyVisitor(std::shared_ptr<VolumeFile> volume_file);
 
    template<typename T>
    void operator()(const T&) const {}
    void operator()(BlobProperty& blobProperty) const { blobProperty.remove(volume_file); }
 private:
-   std::shared_ptr<VolumeFile>& volume_file;
+   std::shared_ptr<VolumeFile> volume_file;
 };
 
-RemoveBlobPropertyVisitor::RemoveBlobPropertyVisitor(std::shared_ptr<VolumeFile>& volume_file)
+RemoveBlobPropertyVisitor::RemoveBlobPropertyVisitor(std::shared_ptr<VolumeFile> volume_file)
    : volume_file(volume_file)
 {
 }
 
-NodeImpl::NodeImpl(std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file)
+NodeImpl::NodeImpl(std::shared_ptr<NodeImpl> parent, VolumeImpl* volume_impl)
    : parent(parent)
-   , volume_file(volume_file)
+   , volume_impl(volume_impl)
 {
-   node_id = volume_file->allocate_next_node_id();
+   node_id = volume_impl->get_volume_file()->allocate_next_node_id();
    save();
 }
 
-NodeImpl::NodeImpl(std::shared_ptr<NodeImpl> parent, std::shared_ptr<VolumeFile> volume_file, record_id_t record_id)
+NodeImpl::NodeImpl(std::shared_ptr<NodeImpl> parent, VolumeImpl* volume_impl, record_id_t record_id)
    : parent(parent)
-   , volume_file(volume_file)
+   , volume_impl(volume_impl)
    , record_id(record_id)
 {
    load();
@@ -51,7 +54,7 @@ std::shared_ptr<NodeImpl> NodeImpl::get_child_impl(const std::string& name)
    std::shared_ptr<NodeImpl> child = it->second.node.lock();
    if (!child) {
       // Node was not loaded. Load it.
-      child = std::make_shared<NodeImpl>(shared_from_this(), volume_file, it->second.record_id);
+      child = std::make_shared<NodeImpl>(shared_from_this(), volume_impl, it->second.record_id);
       it->second.node = child;
       assert(it->second.node_id == child->node_id);
    }
@@ -71,7 +74,7 @@ void NodeImpl::set_property_impl(const std::string& name, const T& value)
    if (it == properties.end()) {
       properties.insert({ name, value });
    } else {
-      boost::apply_visitor(RemoveBlobPropertyVisitor(volume_file), it->second);
+      boost::apply_visitor(RemoveBlobPropertyVisitor(volume_impl->get_volume_file()), it->second);
       it->second = value;
    }
    update();
@@ -86,7 +89,7 @@ bool NodeImpl::remove_property_impl(const std::string& name)
       return false;
    }
 
-   boost::apply_visitor(RemoveBlobPropertyVisitor(volume_file), it->second);
+   boost::apply_visitor(RemoveBlobPropertyVisitor(volume_impl->get_volume_file()), it->second);
    properties.erase(it);
 
    update();
@@ -99,8 +102,10 @@ void NodeImpl::set_time_to_live(std::chrono::milliseconds time)
    if (parent == nullptr) {
       throw LogicError("Can't delete root node");
    }
+   auto previous_time_to_remove = time_to_remove;
    time_to_remove = std::chrono::system_clock::now() + time;
    update();
+   volume_impl->get_time_to_live_manager()->set_time_to_remove(get_unique_node_path(), time_to_remove, previous_time_to_remove);
 }
 
 template<>
@@ -113,14 +118,13 @@ void NodeImpl::set_property_impl<BlobHolder>(const std::string& name, const Blob
    lock_guard locker(lock);
 
    BlobProperty blob_property;
-   blob_property.store(volume_file, blob.data, blob.size);
+   blob_property.store(volume_impl->get_volume_file(), blob.data, blob.size);
 
    auto it = properties.find(name);
    if (it == properties.end()) {
       properties.insert({ name, blob_property });
-   }
-   else {
-      boost::apply_visitor(RemoveBlobPropertyVisitor(volume_file), it->second);
+   } else {
+      boost::apply_visitor(RemoveBlobPropertyVisitor(volume_impl->get_volume_file()), it->second);
       it->second = blob_property;
    }
    update();
@@ -155,7 +159,7 @@ bool NodeImpl::get_property_impl<std::vector<char>>(const std::string& name, std
    }, it->second);
 
    if (res) {
-      value = blob_property.load(volume_file);
+      value = blob_property.load(volume_impl->get_volume_file());
    }
    return res;
 }
@@ -171,7 +175,7 @@ std::shared_ptr<NodeImpl> NodeImpl::add_child_impl(const std::string& name)
       throw NodeAlreadyExists("Node " + name + " already exists.");
    }
 
-   auto new_node = std::make_shared<NodeImpl>(shared_from_this(), volume_file);
+   auto new_node = std::make_shared<NodeImpl>(shared_from_this(), volume_impl);
 
    ChildNode child_node;
    child_node.record_id = new_node->record_id;
@@ -234,7 +238,7 @@ void NodeImpl::remove_child_impl(const std::string & name)
 
    std::shared_ptr<NodeImpl> removing_node = it->second.node.lock();
    if (removing_node == nullptr) {
-      removing_node = std::make_shared<NodeImpl>(shared_from_this(), volume_file, it->second.record_id);
+      removing_node = std::make_shared<NodeImpl>(shared_from_this(), volume_impl, it->second.record_id);
    }
    removing_node->delete_from_volume();
 
@@ -298,10 +302,10 @@ void NodeImpl::save()
    oa & node_id;
    oa & time_to_remove;
    std::string data = os.str();
-   record_id = volume_file->allocate_record(data.c_str(), data.length());
+   record_id = volume_impl->get_volume_file()->allocate_record(data.c_str(), data.length());
 
    if (!parent) {
-      volume_file->set_root_node_record_id(record_id);
+      volume_impl->get_volume_file()->set_root_node_record_id(record_id);
    }
 }
 
@@ -315,12 +319,12 @@ void NodeImpl::save_nodes()
    boost::archive::binary_oarchive oa(os);
    oa & nodes;
    std::string data = os.str();
-   volume_file->write_record(record_id, data.c_str(), data.length());
+   volume_impl->get_volume_file()->write_record(record_id, data.c_str(), data.length());
 }
 
 void NodeImpl::load()
 {
-   volume_file->read_record(record_id, [&](std::istream& is) {
+   volume_impl->get_volume_file()->read_record(record_id, [&](std::istream& is) {
       boost::archive::binary_iarchive ia(is);
       ia & nodes;
       ia & properties;
@@ -345,7 +349,7 @@ void NodeImpl::update()
       if (parent) {
          parent->child_node_record_id_updated(node_id, record_id);
       } else {
-         volume_file->set_root_node_record_id(record_id);
+         volume_impl->get_volume_file()->set_root_node_record_id(record_id);
       }
    }
 }
@@ -393,19 +397,19 @@ void NodeImpl::delete_from_volume()
          for (auto it = node->nodes.begin(); it != node->nodes.end(); ++it) {
             std::shared_ptr<NodeImpl> child = it->second.node.lock();
             if (!child) {
-               child = std::make_shared<NodeImpl>(shared_from_this(), volume_file, it->second.record_id);
+               child = std::make_shared<NodeImpl>(shared_from_this(), volume_impl, it->second.record_id);
             }
             nodes_to_delete.push_back(NodeToDelete(child));
          }
          continue;
       }
 
-      node_to_delete.node->volume_file->delete_record(node_to_delete.node->record_id);
+      volume_impl->get_volume_file()->delete_record(node_to_delete.node->record_id);
       for (auto key_property : node_to_delete.node->properties) {
-         boost::apply_visitor(RemoveBlobPropertyVisitor(node_to_delete.node->volume_file), key_property.second);
+         boost::apply_visitor(RemoveBlobPropertyVisitor(volume_impl->get_volume_file()), key_property.second);
       }
       node_to_delete.node->record_id = DELETED_NODE_RECORD_ID;
-      node_to_delete.node->volume_file = nullptr;
+      node_to_delete.node->volume_impl = nullptr;
 
       nodes_to_delete.pop_back();
    }

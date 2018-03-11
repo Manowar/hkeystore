@@ -34,7 +34,10 @@ public:
    void write_record(record_id_t record_id, const void* data, size_t size);
 
    record_id_t get_root_node_record_id() const;
-   void set_root_node_record_id(record_id_t record_id);
+   void set_root_node_record_id(record_id_t root_node_record_id);
+
+   record_id_t get_bplus_tree_record_id() const;
+   void set_bplus_tree_record_id(record_id_t bplus_tree_record_id);
 
    node_id_t allocate_next_node_id();
 
@@ -53,8 +56,9 @@ private:
       size_t free_records_block_offsets[SIZES_COUNT];
       size_t available_free_records_block_offset;
       record_id_t root_node_record_id;
+      record_id_t bplus_tree_record_id;
       node_id_t next_node_id;
-      char padding[CONTROL_BLOCK_SIZE - 4 - sizeof(int32_t) - SIZES_COUNT * sizeof(size_t) - sizeof(size_t) - sizeof(uint64_t) - sizeof(node_id_t)];
+      char padding[CONTROL_BLOCK_SIZE - 4 - sizeof(int32_t) - SIZES_COUNT * sizeof(size_t) - sizeof(size_t) - 2 * sizeof(record_id_t) - sizeof(node_id_t)];
    };
 
    static_assert(sizeof(HeaderBlock) == CONTROL_BLOCK_SIZE);

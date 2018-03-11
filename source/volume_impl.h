@@ -6,6 +6,8 @@
 #include <storage.h>
 
 #include "node_impl.h"
+#include "time_to_live_manager.h"
+#include "bplus_tree.h"
 
 class VolumeImpl : public Volume
 {
@@ -15,10 +17,18 @@ public:
    void set_storage(Storage* storage);
    Storage* get_storage();
 
+   TimeToLiveManager* get_time_to_live_manager();
+   std::shared_ptr<VolumeFile> get_volume_file();
+
    std::shared_ptr<NodeImpl> get_node(const std::string& path);
 private:
+   using NodesToRemoveTree = TimeToLiveManager::NodesToRemoveTree;
+
    Storage* storage = nullptr;
+
    std::shared_ptr<NodeImpl> root;
+   std::unique_ptr<TimeToLiveManager> time_to_live_manager;
+   std::shared_ptr<VolumeFile> volume_file;
 };
 
 #endif

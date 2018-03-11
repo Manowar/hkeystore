@@ -50,6 +50,7 @@ void VolumeFile::create_new_volume_file(const std::string& path)
    }
    header_block.available_free_records_block_offset = EMPTY_OFFSET;
    header_block.root_node_record_id = record_id_t(-1);
+   header_block.bplus_tree_record_id = record_id_t(-1);
    header_block.next_node_id = 0;
    memset(header_block.padding, 0, sizeof(header_block.padding));
    file.write(reinterpret_cast<char*>(&header_block), sizeof(HeaderBlock));
@@ -121,10 +122,23 @@ record_id_t VolumeFile::get_root_node_record_id() const
    return header_block.root_node_record_id;
 }
 
-void VolumeFile::set_root_node_record_id(record_id_t record_id)
+void VolumeFile::set_root_node_record_id(record_id_t root_node_record_id)
 {
    lock_guard locker(lock);
-   header_block.root_node_record_id = record_id;
+   header_block.root_node_record_id = root_node_record_id;
+   save_header_block();
+}
+
+record_id_t VolumeFile::get_bplus_tree_record_id() const
+{
+   lock_guard locker(lock);
+   return header_block.bplus_tree_record_id;
+}
+
+void VolumeFile::set_bplus_tree_record_id(record_id_t bplus_tree_record_id)
+{
+   lock_guard locker(lock);
+   header_block.bplus_tree_record_id = bplus_tree_record_id;
    save_header_block();
 }
 
